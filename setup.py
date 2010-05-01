@@ -7,6 +7,7 @@ setup(
       author = "Taher Haveliwala",
       url = "http://code.google.com/p/pysimsearch/",
       keywords = ["similarity"],
+      requires = ["httplib2", "libxml"],
       classifiers = [
                      "Programming Language :: Python",
                      "License :: OSI Approved :: BSD License",

@@ -31,7 +31,7 @@
 
 Sample usage as a script:
 $ python similarity.py http://www.stanford.edu/ http://www.berkeley.edu/ http://www.mit.edu/
-Comparing files ['http://www.stanford.edu/', 'http://www.berkeley.edu/', 'http://www.mit.edu/'])
+Comparing files ['http://www.stanford.edu/', 'http://www.berkeley.edu/', 'http://www.mit.edu/']
 sim(http://www.stanford.edu/,http://www.berkeley.edu/)=0.322771960247
 sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
 sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
@@ -50,12 +50,12 @@ from lxml.html.clean import clean_html
 def measure_similarity(file_a, file_b):
     '''
     Returns the textual similarity of file_a and file_b
-    Uses the cosine similarity measure: <a,b>/(|a||b|)
+    Uses the cosine similarity measure: <u,v>/(|u||v|)
     '''
-    tv_a = term_vec(file_a)
-    tv_b = term_vec(file_b)
+    u = term_vec(file_a)
+    v = term_vec(file_b)
 
-    return dot_product(tv_a, tv_b) / (magnitude(tv_a) * magnitude(tv_b))
+    return dot_product(u, v) / (magnitude(u) * magnitude(v))
     
 def dot_product(v1, v2):
     '''Returns dot product of two term vectors'''
@@ -84,12 +84,15 @@ def term_vec(file):
             tf_dict[term] += 1
     return tf_dict
 
+# _get_text_stream() needs an http object
+_h = httplib2.Http('.cache')
+
 def _get_text_stream(name):
     '''Returns a text stream from either a file or a url'''
     file = None
     http_pattern = '^http://'
     if re.search(http_pattern, name):
-        (response, content) = h.request(name)
+        (response, content) = _h.request(name)
         html_tree = lxml.html.fromstring(content)
         clean_html(html_tree)  # removes crud from html
         clean_html_string = lxml.html.tostring(html_tree, 
@@ -99,17 +102,20 @@ def _get_text_stream(name):
         file  = open(name)
     return file
 
-
-if __name__ == '__main__':
-    print('Comparing files {0})'.format(str(sys.argv[1:])))
-    h = httplib2.Http('.cache')
-    for i in range(1,len(sys.argv)):
-        for j in range(i+1, len(sys.argv)):
-            fname_a = sys.argv[i]
-            fname_b = sys.argv[j]
+def pairwise_compare(files):
+    print('Comparing files {0}'.format(str(files)))
+    for i in range(0,len(files)):
+        for j in range(i+1, len(files)):
+            fname_a = files[i]
+            fname_b = files[j]
             with _get_text_stream(fname_a) as file_a:
                 with _get_text_stream(fname_b) as file_b:
                     print('sim({0},{1})={2}'.
                           format(fname_a, fname_b,
-                                 measure_similarity(file_a, file_b)))
+                                 measure_similarity(file_a, file_b)))    
 
+def main():
+    pairwise_compare(sys.argv[1:])
+
+if __name__ == '__main__':
+    main()

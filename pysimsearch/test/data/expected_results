@@ -1,0 +1,4 @@
+testdata_1	testdata_2	1
+testdata_1	testdata_3	0
+testdata_2	testdata_3	0
+testdata_1	testdata_4	.7071

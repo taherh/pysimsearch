@@ -7,6 +7,7 @@ setup(
       author = "Taher Haveliwala",
       author_email = "oss@taherh.org",
       url = "http://code.google.com/p/pysimsearch/",
+      download_url = "http://pysimsearch.googlecode.com/files/pysimsearch-0.1.tar.gz",
       keywords = ["similarity"],
       requires = ["httplib2", "libxml"],
       classifiers = [

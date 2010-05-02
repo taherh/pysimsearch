@@ -5,6 +5,7 @@ setup(
       version = "0.1",
       description = "Similarity-search library",
       author = "Taher Haveliwala",
+      author_email = "oss@taherh.org",
       url = "http://code.google.com/p/pysimsearch/",
       keywords = ["similarity"],
       requires = ["httplib2", "libxml"],

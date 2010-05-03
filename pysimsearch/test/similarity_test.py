@@ -59,14 +59,44 @@ class SimsearchTest(unittest.TestCase):
         v1 = {'a':1, 'b':2, 'c':0.5}
         v2 = {'a':2,        'c':2, 'd':100}
         
-        self.assertEquals(similarity.dot_product(v1, v2), 3)
+        self.assertEqual(similarity.dot_product(v1, v2), 3)
 
-    def test_magnitude(self):
-        '''magnitude() test using known inputs'''
+    def test_l2_norm(self):
+        '''l2_norm() test using known inputs'''
         v = {'a':1, 'b':2, 'c':5}
         
-        self.assertEquals(similarity.magnitude(v), math.sqrt(1 + 2**2 + 5**2))
+        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
 
+    def test_magnitude(self):
+        '''test that magnitude is aliased to l2_norm'''
+        self.assert_(similarity.magnitude == similarity.l2_norm)
+        
+    def test_mag_union(self):
+        '''mag_union() test using known inputs'''
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+        
+        self.assertEqual(similarity.mag_union(A, B), 14)
+    
+    def test_mag_intersect(self):
+        '''mag_intersect() test using known inputs'''
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+        
+        self.assertEqual(similarity.mag_intersect(A, B), 3)
+    
+    def test_cosine_sim(self):
+        u = {'a':1, 'b':2, 'c':5}
+        v = {'a':1,        'c':2, 'd':3}
+    
+        self.assertEqual(similarity.cosine_sim(u, v), 11 / (math.sqrt(30) * math.sqrt(14)))
+        
+    def test_jaccard_sim(self):
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+    
+        self.assertEqual(similarity.jaccard_sim(A, B), 14 / 3)
+    
     def test_measure_similarity(self):
         '''
         measure_similarity() should give known results for known inputs
@@ -74,7 +104,6 @@ class SimsearchTest(unittest.TestCase):
         known results are listed in 'test/data/expected_results' with the format
             filename1 filename2 sim
         '''
-
         # read test filenames
         with open(self.testdata_dir + 'test_filenames') as input_filenames_file:
             input_filenames = [fname.rstrip() for fname in 
@@ -92,19 +121,13 @@ class SimsearchTest(unittest.TestCase):
                              line)
                 self.expected_sims[(fname_a,fname_b)] = float(expected_sim)
                 
-        # generator of file-pairs to compare    
-        file_pairs = ((fname_a, fname_b)
-                      for (fname_a,fname_b) in \
-                          itertools.product(input_filenames, repeat=2)
-                      if fname_a < fname_b)  # We don't want to self-compare
-        
         # check computed similarities against expected similarities
-        for (fname_a, fname_b) in file_pairs:
-            if (fname_a, fname_b) not in self.expected_sims: continue
+        for (fname_a, fname_b) in self.expected_sims:
+            print('Comparing {0},{1}'.format(fname_a, fname_b))
             with open(self.testdata_dir + fname_a) as file_a:
                 with open(self.testdata_dir + fname_b) as file_b:
                     sim = similarity.measure_similarity(file_a, file_b)
-                    self.assertAlmostEquals(
+                    self.assertAlmostEqual(
                             sim, self.expected_sims[(fname_a, fname_b)], 
                             places = 3,
                             msg = 'Mismatch for pair {0}: got {1}, expected {2}'.

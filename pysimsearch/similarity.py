@@ -37,8 +37,9 @@ sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
 sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
 
 '''
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, unicode_literals
 
+import codecs
 import sys
 import math
 import re
@@ -146,7 +147,7 @@ def term_vec(file):
     return tf_dict
 
 # get_text_stream() needs an http object
-_h = httplib2.Http('.cache')
+_h = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode for cachefile name
 
 def get_text_stream(name):
     '''Returns a text stream from either a file or a url'''
@@ -160,9 +161,57 @@ def get_text_stream(name):
                                                encoding=unicode, method='text')
         file = io.StringIO(clean_html_string)
     else:
-        file  = open(name)
+        file  = codecs.open(name, encoding='utf-8')
     return file
 
+# --- Support for TFIDF weighting ---
+def parse_df(file):
+    '''
+    Parses a document frequency file for use in applying df term weighting
+    '''
+    df_dict = {}
+    for line in file:
+        ln_list = line.split()
+        if len(ln_list) == 0: continue  # skip blank lines without warning
+        if len(ln_list) != 2:  # raise exception if there were not exactly two entries in the line
+            raise FileFormatException(
+                'Bad line in doc freq file ({0} entries, expecting 2): {1}'.
+                format(len(ln_list), line))
+        (term, df) = ln_list
+        df_dict[term] = int(df)
+    return df_dict
+
+def write_df(df_dict, file):
+    '''
+    Writes the document frequency data structure to file
+    TODO: sort order?
+    '''
+    for (term, df) in df_dict.items():
+        file.write(u'{0}\t{1}\n'.format(term, df))
+    
+def compute_df(files):
+    '''
+    Creates a document frequency count by processing a collection of files
+    '''
+    df_dict = {}
+    for file in files:
+        term_seen = set()
+        for line in file:
+            for term in line.split():
+                if term not in term_seen:
+                    if term not in df_dict: df_dict[term] = 0
+                    df_dict[term]+=1
+                    term_seen.add(term)
+    return df_dict
+
+# --- Exceptions ---
+class Error(Exception):
+    '''Base class for Exception types used in this module'''
+    pass
+
+class FileFormatException(Exception):
+    pass
+    
 # --- main() ---
 
 def main():

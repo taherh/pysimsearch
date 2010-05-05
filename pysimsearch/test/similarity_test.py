@@ -31,10 +31,11 @@
 
 To run unittests, run 'nosetests' from the test directory
 '''
-from __future__ import division, absolute_import, print_function
+from __future__ import division, absolute_import, print_function, unicode_literals
 
 import unittest
 
+import io
 import itertools
 import math
 import os
@@ -86,16 +87,49 @@ class SimsearchTest(unittest.TestCase):
         self.assertEqual(similarity.mag_intersect(A, B), 3)
     
     def test_cosine_sim(self):
+        '''cosine_sim() test using known inputs'''
         u = {'a':1, 'b':2, 'c':5}
         v = {'a':1,        'c':2, 'd':3}
     
         self.assertEqual(similarity.cosine_sim(u, v), 11 / (math.sqrt(30) * math.sqrt(14)))
         
     def test_jaccard_sim(self):
+        '''jaccard_sim() test using known inputs'''
         A = {'a':1, 'b':2, 'c':5}
         B = {'a':1,        'c':2, 'd':3}
     
         self.assertEqual(similarity.jaccard_sim(A, B), 14 / 3)
+    
+    def test_parse_df(self):
+        '''parse_df() test'''
+        df_dict = {'a':5, 'b':3, 'c':1}
+        df_file_str =\
+        '''
+        a    5
+        b    3
+        c    1
+        '''
+        df_file = io.StringIO(df_file_str)
+        self.assertEqual(similarity.parse_df(df_file), df_dict)
+        
+    def test_write_df(self):
+        '''write_df() test'''
+        df_dict = {'a':5, 'b':3, 'c':1}
+        df_file = io.StringIO()
+        similarity.write_df(df_dict, df_file)
+        
+        df_file.seek(0)
+        self.assertEqual(similarity.parse_df(df_file), df_dict)
+            
+    def test_compute_df(self):
+        doc1 = 'a b b     c d e e e e f'
+        doc2 = '  b           e         g g g h i'
+        doc3 = '  b b b b c d                 h  '
+        
+        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2, 'i':1}
+        
+        files = (io.StringIO(doc1), io.StringIO(doc2), io.StringIO(doc3))
+        self.assertEqual(similarity.compute_df(files), df_dict)
     
     def test_measure_similarity(self):
         '''

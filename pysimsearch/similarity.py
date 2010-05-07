@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2010, Taher Haveliwala
+# Copyright (c) 2010, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

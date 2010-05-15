@@ -2,7 +2,7 @@ from distutils.core import setup
 setup(
       name = "pysimsearch",
       packages = ["pysimsearch", "pysimsearch.test"],
-      version = "0.16",
+      version = "0.17",
       description = "Similarity-search library",
       author = "Taher Haveliwala",
       author_email = "oss@taherh.org",
@@ -19,6 +19,7 @@ setup(
 Similarity-Search Library
 -------------------------
 
-Utilities for measuring textual similarity of files and web pages.               
+Requires Python v2.6 or higher
+Library for measuring textual similarity of files and web pages.
 '''
       )

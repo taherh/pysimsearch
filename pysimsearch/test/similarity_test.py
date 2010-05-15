@@ -98,7 +98,7 @@ class SimsearchTest(unittest.TestCase):
         A = {'a':1, 'b':2, 'c':5}
         B = {'a':1,        'c':2, 'd':3}
     
-        self.assertEqual(similarity.jaccard_sim(A, B), 14 / 3)
+        self.assertEqual(similarity.jaccard_sim(A, B), 3 / 14)
     
     def test_parse_df(self):
         '''parse_df() test'''

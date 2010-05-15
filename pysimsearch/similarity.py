@@ -48,13 +48,12 @@ import httplib2
 import lxml.html
 from lxml.html.clean import clean_html
 
-default_sim_func = None
-
 # --- top-level functions ---
 def measure_similarity(file_a, file_b, sim_func = None):
     '''
     Returns the textual similarity of file_a and file_b using chosen similarity metric
-    sim_func defaults to cosine_sim if not specified
+    'sim_func' defaults to cosine_sim if not specified
+    Consumes file_a and file_b
     '''
     if sim_func == None: sim_func = cosine_sim  # default to cosine_sim
     
@@ -63,15 +62,15 @@ def measure_similarity(file_a, file_b, sim_func = None):
     
     return sim_func(u, v)
 
-def pairwise_compare(files, sim_func = None):
+def pairwise_compare(filenames, sim_func = None):
     '''
-    Does a pairwise comparison of the entries in 'files' and prints similarities
+    Does a pairwise comparison of the entries in 'filenames' and prints similarities
     '''
-    print('Comparing files {0}'.format(str(files)))
-    for i in range(0,len(files)):
-        for j in range(i+1, len(files)):
-            fname_a = files[i]
-            fname_b = files[j]
+    print('Comparing files {0}'.format(str(filenames)))
+    for i in range(0,len(filenames)):
+        for j in range(i+1, len(filenames)):
+            fname_a = filenames[i]
+            fname_b = filenames[j]
             with get_text_stream(fname_a) as file_a:
                 with get_text_stream(fname_b) as file_b:
                     print('sim({0},{1})={2}'.
@@ -92,7 +91,7 @@ def jaccard_sim(A, B):
     Returns the Jaccard similarity of A,B: |A \cap B| / |A \cup B|
     We treat A and B as multi-sets (The Jaccard coefficient is technically defined over sets)
     '''
-    return mag_union(A, B) / mag_intersect(A, B)
+    return mag_intersect(A, B) / mag_union(A, B)
 
 # --- Term-vector operations ---
 
@@ -140,8 +139,6 @@ def term_vec(file):
     tf_dict = {}
     for line in file:
         for term in line.split():
-            if type(term) == bytes:
-                term = term.decode('utf-8')  # Make sure 'term' is in unicode (Python 2.x hack)
             if not term in tf_dict: tf_dict[term] = 0
             tf_dict[term] += 1
     return tf_dict

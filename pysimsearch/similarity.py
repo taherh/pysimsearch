@@ -39,6 +39,7 @@ sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
 '''
 from __future__ import division, absolute_import, print_function, unicode_literals
 
+import argparse
 import codecs
 import sys
 import math
@@ -197,7 +198,7 @@ def compute_df(files):
             for term in line.split():
                 if term not in term_seen:
                     if term not in df_dict: df_dict[term] = 0
-                    df_dict[term]+=1
+                    df_dict[term] += 1
                     term_seen.add(term)
     return df_dict
 
@@ -206,13 +207,33 @@ class Error(Exception):
     '''Base class for Exception types used in this module'''
     pass
 
-class FileFormatException(Exception):
+class FileFormatException(Error):
     pass
     
 # --- main() ---
 
 def main():
-    pairwise_compare(sys.argv[1:])
+    parser = argparse.ArgumentParser(description='List pairwise similarities of input documents')
+    parser.add_argument('doc', nargs='*', help='a document in the comparison list')
+    parser.add_argument('-l', '--list', nargs='?',
+                        help='file containing list of documents to compare')
+
+    args = parser.parse_args()
+
+    doc_list = []
+    if args.list != None:
+        try:
+            with open(args.list) as input_docnames_file:
+                doc_list = [line.strip() for line in input_docnames_file.readlines()]
+        except IOError:
+            print("Sorry, could not open " + args.list)
+
+    doc_list.extend(args.doc)
+
+    if len(doc_list) < 2:
+        raise Error("Sorry, you must specify at least two documents to compare.")  
+
+    pairwise_compare(doc_list)
 
 if __name__ == '__main__':
     main()

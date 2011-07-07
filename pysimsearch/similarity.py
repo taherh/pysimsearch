@@ -37,11 +37,11 @@ sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
 sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
 
 '''
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import division, absolute_import, print_function, \
+    unicode_literals
 
 import argparse
 import codecs
-import sys
 import math
 import re
 import io
@@ -52,11 +52,15 @@ from lxml.html.clean import clean_html
 # --- top-level functions ---
 def measure_similarity(file_a, file_b, sim_func = None):
     '''
-    Returns the textual similarity of file_a and file_b using chosen similarity metric
+    Returns the textual similarity of file_a and file_b using chosen
+    similarity metric
+    
     'sim_func' defaults to cosine_sim if not specified
+    
     Consumes file_a and file_b
     '''
-    if sim_func == None: sim_func = cosine_sim  # default to cosine_sim
+    if sim_func == None:
+        sim_func = cosine_sim  # default to cosine_sim
     
     u = term_vec(file_a)
     v = term_vec(file_b)
@@ -65,10 +69,11 @@ def measure_similarity(file_a, file_b, sim_func = None):
 
 def pairwise_compare(filenames, sim_func = None):
     '''
-    Does a pairwise comparison of the entries in 'filenames' and prints similarities
+    Does a pairwise comparison of the documents specified by 'filenames'
+    and prints their pairwise similarities
     '''
     print('Comparing files {0}'.format(str(filenames)))
-    for i in range(0,len(filenames)):
+    for i in range(0, len(filenames)):
         for j in range(i+1, len(filenames)):
             fname_a = filenames[i]
             fname_b = filenames[j]
@@ -90,7 +95,8 @@ def cosine_sim(u, v):
 def jaccard_sim(A, B):
     r'''
     Returns the Jaccard similarity of A,B: |A \cap B| / |A \cup B|
-    We treat A and B as multi-sets (The Jaccard coefficient is technically defined over sets)
+    We treat A and B as multi-sets (The Jaccard coefficient is technically
+    meant for sets, although it is easily extended to multi-sets)
     '''
     return mag_intersect(A, B) / mag_union(A, B)
 
@@ -135,24 +141,28 @@ magnitude = l2_norm
 # --- Utilities for creating term vectors from data ---
 
 def term_vec(file):
-    '''Returns a term vector for 'file', represented as a dictionary mapping {term->frequency}'''
+    '''
+    Returns a term vector for 'file', represented as a dictionary
+    mapping {term->frequency}
+    '''
     
     tf_dict = {}
     for line in file:
         for term in line.split():
-            if not term in tf_dict: tf_dict[term] = 0
+            if not term in tf_dict:
+                tf_dict[term] = 0
             tf_dict[term] += 1
     return tf_dict
 
 # get_text_stream() needs an http object
-_h = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode for cachefile name
+_H = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode
 
 def get_text_stream(name):
     '''Returns a text stream from either a file or a url'''
     file = None
     http_pattern = '^http://'
     if re.search(http_pattern, name):
-        (response, content) = _h.request(name)
+        (response, content) = _H.request(name)
         html_tree = lxml.html.fromstring(content)
         clean_html(html_tree)  # removes crud from html
         clean_html_string = lxml.html.tostring(html_tree, 
@@ -162,45 +172,6 @@ def get_text_stream(name):
         file  = codecs.open(name, encoding='utf-8')
     return file
 
-# --- Support for TFIDF weighting ---
-def parse_df(file):
-    '''
-    Parses a document frequency file for use in applying df term weighting
-    '''
-    df_dict = {}
-    for line in file:
-        ln_list = line.split()
-        if len(ln_list) == 0: continue  # skip blank lines without warning
-        if len(ln_list) != 2:  # raise exception if there were not exactly two entries in the line
-            raise FileFormatException(
-                'Bad line in doc freq file ({0} entries, expecting 2): {1}'.
-                format(len(ln_list), line))
-        (term, df) = ln_list
-        df_dict[term] = int(df)
-    return df_dict
-
-def write_df(df_dict, file):
-    '''
-    Writes the document frequency data structure to file
-    TODO: sort order?
-    '''
-    for (term, df) in df_dict.items():
-        file.write(u'{0}\t{1}\n'.format(term, df))
-    
-def compute_df(files):
-    '''
-    Creates a document frequency count by processing a collection of files
-    '''
-    df_dict = {}
-    for file in files:
-        term_seen = set()
-        for line in file:
-            for term in line.split():
-                if term not in term_seen:
-                    if term not in df_dict: df_dict[term] = 0
-                    df_dict[term] += 1
-                    term_seen.add(term)
-    return df_dict
 
 # --- Exceptions ---
 class Error(Exception):
@@ -208,13 +179,17 @@ class Error(Exception):
     pass
 
 class FileFormatException(Error):
+    '''Exception for invalid input file'''
     pass
     
 # --- main() ---
 
 def main():
-    parser = argparse.ArgumentParser(description='List pairwise similarities of input documents')
-    parser.add_argument('doc', nargs='*', help='a document in the comparison list')
+    '''Commandline interface for measure pairwise similarities of files'''
+    parser = argparse.ArgumentParser(
+        description='List pairwise similarities of input documents')
+    parser.add_argument('doc', nargs='*',
+                        help='a document in the comparison list')
     parser.add_argument('-l', '--list', nargs='?',
                         help='file containing list of documents to compare')
 
@@ -224,14 +199,16 @@ def main():
     if args.list != None:
         try:
             with open(args.list) as input_docnames_file:
-                doc_list = [line.strip() for line in input_docnames_file.readlines()]
+                doc_list = [line.strip() for line in
+                            input_docnames_file.readlines()]
         except IOError:
             print("Sorry, could not open " + args.list)
 
     doc_list.extend(args.doc)
 
     if len(doc_list) < 2:
-        raise Error("Sorry, you must specify at least two documents to compare.")  
+        raise Error("Sorry, you must specify at least two documents "
+                    "to compare.")  
 
     pairwise_compare(doc_list)
 

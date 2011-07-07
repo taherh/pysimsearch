@@ -2,12 +2,12 @@ from distutils.core import setup
 setup(
       name = "pysimsearch",
       packages = ["pysimsearch", "pysimsearch.test"],
-      version = "0.17",
+      version = "0.18",
       description = "Similarity-search library",
       author = "Taher Haveliwala",
       author_email = "oss@taherh.org",
-      url = "http://code.google.com/p/pysimsearch/",
-      download_url = "http://pysimsearch.googlecode.com/files/pysimsearch-0.16.tar.gz",
+      url = "https://github.com/taherh/pysimsearch",
+      download_url = "",
       keywords = ["similarity"],
       requires = ["httplib2", "libxml"],
       classifiers = [
@@ -19,7 +19,7 @@ setup(
 Similarity-Search Library
 -------------------------
 
-Requires Python v2.6 or higher
+Requires Python v2.7.1 or higher
 Library for measuring textual similarity of files and web pages.
 '''
       )

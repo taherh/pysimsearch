@@ -37,22 +37,32 @@ sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
 sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
 
 '''
-from __future__ import division, absolute_import, print_function, \
-    unicode_literals
 
+from __future__ import (division, absolute_import, print_function,
+    unicode_literals)
+
+# boilerplate to allow running as script
+if __name__ == "__main__" and __package__ is None:
+    import sys, os
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, parent_dir)
+    import pysimsearch
+    __package__ = str("pysimsearch")
+    del sys, os
+    
+# external modules
 import argparse
-import codecs
-import math
-import re
-import io
-import httplib2
-import lxml.html
-from lxml.html.clean import clean_html
+
+# our modules
+from . import doc_reader
+from .exceptions import *
+from .term_vec import *
+
 
 # --- top-level functions ---
 def measure_similarity(file_a, file_b, sim_func = None):
     '''
-    Returns the textual similarity of file_a and file_b using chosen
+    Returns the textual similarity of term_vec_a and term_vec_b using chosen
     similarity metric
     
     'sim_func' defaults to cosine_sim if not specified
@@ -62,12 +72,9 @@ def measure_similarity(file_a, file_b, sim_func = None):
     if sim_func == None:
         sim_func = cosine_sim  # default to cosine_sim
     
-    u = term_vec(file_a)
-    v = term_vec(file_b)
-    
-    return sim_func(u, v)
+    return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
 
-def pairwise_compare(filenames, sim_func = None):
+def pairwise_compare(filenames):
     '''
     Does a pairwise comparison of the documents specified by 'filenames'
     and prints their pairwise similarities
@@ -77,11 +84,11 @@ def pairwise_compare(filenames, sim_func = None):
         for j in range(i+1, len(filenames)):
             fname_a = filenames[i]
             fname_b = filenames[j]
-            with get_text_stream(fname_a) as file_a:
-                with get_text_stream(fname_b) as file_b:
+            with doc_reader.get_text_file(fname_a) as file_a:
+                with doc_reader.get_text_file(fname_b) as file_b:
                     print('sim({0},{1})={2}'.
                           format(fname_a, fname_b,
-                                 measure_similarity(file_a, file_b, sim_func)))
+                                 measure_similarity(file_a, file_b)))
   
 # --- Similarity measures ---
     
@@ -100,88 +107,7 @@ def jaccard_sim(A, B):
     '''
     return mag_intersect(A, B) / mag_union(A, B)
 
-# --- Term-vector operations ---
 
-def dot_product(v1, v2):
-    '''Returns dot product of two term vectors'''
-    val = 0.0
-    for term in v1:
-        if term in v2: val += v1[term] * v2[term]
-    return val
-
-def l2_norm(v):
-    '''Returns L2 norm of term vector v'''
-    val = 0.0
-    for term in v:
-        val += v[term]**2
-    val = math.sqrt(val)
-    return val
-
-def mag_union(A, B):
-    '''
-    Returns magnitude of multiset-union of A and B
-    '''
-    val = 0
-    for term in A: val += A[term]
-    for term in B: val += B[term]
-    return val
-
-def mag_intersect(A, B):
-    '''
-    Returns magnitude of multiset-intersection of A and B
-    '''
-    val = 0
-    for term in A:
-        if term in B: val += min(A[term], B[term])
-    return val
-
-# another name for l2_norm()
-magnitude = l2_norm
-
-# --- Utilities for creating term vectors from data ---
-
-def term_vec(file):
-    '''
-    Returns a term vector for 'file', represented as a dictionary
-    mapping {term->frequency}
-    '''
-    
-    tf_dict = {}
-    for line in file:
-        for term in line.split():
-            if not term in tf_dict:
-                tf_dict[term] = 0
-            tf_dict[term] += 1
-    return tf_dict
-
-# get_text_stream() needs an http object
-_H = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode
-
-def get_text_stream(name):
-    '''Returns a text stream from either a file or a url'''
-    file = None
-    http_pattern = '^http://'
-    if re.search(http_pattern, name):
-        (response, content) = _H.request(name)
-        html_tree = lxml.html.fromstring(content)
-        clean_html(html_tree)  # removes crud from html
-        clean_html_string = lxml.html.tostring(html_tree, 
-                                               encoding=unicode, method='text')
-        file = io.StringIO(clean_html_string)
-    else:
-        file  = codecs.open(name, encoding='utf-8')
-    return file
-
-
-# --- Exceptions ---
-class Error(Exception):
-    '''Base class for Exception types used in this module'''
-    pass
-
-class FileFormatException(Error):
-    '''Exception for invalid input file'''
-    pass
-    
 # --- main() ---
 
 def main():

@@ -42,8 +42,10 @@ import os
 import sys
 
 from pysimsearch import similarity
+from pysimsearch import freq_tools
+from pysimsearch import doc_reader
 
-class SimsearchTest(unittest.TestCase):
+class SimilarityTest(unittest.TestCase):
     testdata_dir = None  # Will be set in setUp()
     expected_sims = dict()
 
@@ -55,82 +57,6 @@ class SimsearchTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_dot_product(self):
-        '''dot_product() test using known inputs'''
-        v1 = {'a':1, 'b':2, 'c':0.5}
-        v2 = {'a':2,        'c':2, 'd':100}
-        
-        self.assertEqual(similarity.dot_product(v1, v2), 3)
-
-    def test_l2_norm(self):
-        '''l2_norm() test using known inputs'''
-        v = {'a':1, 'b':2, 'c':5}
-        
-        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
-
-    def test_magnitude(self):
-        '''test that magnitude is aliased to l2_norm'''
-        self.assert_(similarity.magnitude == similarity.l2_norm)
-        
-    def test_mag_union(self):
-        '''mag_union() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-        
-        self.assertEqual(similarity.mag_union(A, B), 14)
-    
-    def test_mag_intersect(self):
-        '''mag_intersect() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-        
-        self.assertEqual(similarity.mag_intersect(A, B), 3)
-    
-    def test_cosine_sim(self):
-        '''cosine_sim() test using known inputs'''
-        u = {'a':1, 'b':2, 'c':5}
-        v = {'a':1,        'c':2, 'd':3}
-    
-        self.assertEqual(similarity.cosine_sim(u, v), 11 / (math.sqrt(30) * math.sqrt(14)))
-        
-    def test_jaccard_sim(self):
-        '''jaccard_sim() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-    
-        self.assertEqual(similarity.jaccard_sim(A, B), 3 / 14)
-    
-    def test_parse_df(self):
-        '''parse_df() test'''
-        df_dict = {'a':5, 'b':3, 'c':1}
-        df_file_str =\
-        '''
-        a    5
-        b    3
-        c    1
-        '''
-        df_file = io.StringIO(df_file_str)
-        self.assertEqual(similarity.parse_df(df_file), df_dict)
-        
-    def test_write_df(self):
-        '''write_df() test'''
-        df_dict = {'a':5, 'b':3, 'c':1}
-        df_file = io.StringIO()
-        similarity.write_df(df_dict, df_file)
-        
-        df_file.seek(0)
-        self.assertEqual(similarity.parse_df(df_file), df_dict)
-            
-    def test_compute_df(self):
-        doc1 = 'a b b     c d e e e e f'
-        doc2 = '  b           e         g g g h i'
-        doc3 = '  b b b b c d                 h  '
-        
-        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2, 'i':1}
-        
-        files = (io.StringIO(doc1), io.StringIO(doc2), io.StringIO(doc3))
-        self.assertEqual(similarity.compute_df(files), df_dict)
-    
     def test_measure_similarity(self):
         '''
         measure_similarity() should give known results for known inputs
@@ -150,7 +76,7 @@ class SimsearchTest(unittest.TestCase):
                 expected_results_file:
             for line in expected_results_file:
                 (fname_a, fname_b, expected_sim) = line.split()
-                self.assert_(fname_a < fname_b,
+                self.assertTrue(fname_a < fname_b,
                              'expected_results: require fname_a < fname_b: ' + 
                              line)
                 self.expected_sims[(fname_a,fname_b)] = float(expected_sim)
@@ -167,8 +93,87 @@ class SimsearchTest(unittest.TestCase):
                             msg = 'Mismatch for pair {0}: got {1}, expected {2}'.
                             format((fname_a, fname_b), sim, 
                                    self.expected_sims[(fname_a, fname_b)]))
+
+    def test_cosine_sim(self):
+        '''cosine_sim() test using known inputs'''
+        u = {'a':1, 'b':2, 'c':5}
+        v = {'a':1,        'c':2, 'd':3}
+    
+        self.assertEqual(similarity.cosine_sim(u, v), 11 / (math.sqrt(30) * math.sqrt(14)))
+        
+    def test_jaccard_sim(self):
+        '''jaccard_sim() test using known inputs'''
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+    
+        self.assertEqual(similarity.jaccard_sim(A, B), 3 / 14)
+    
+class FreqToolsTest(unittest.TestCase):
+    def test_read_df(self):
+        '''read_df() test'''
+        df_dict = {'a':5, 'b':3, 'c':1}
+        df_file_str =\
+        '''
+        a    5
+        b    3
+        c    1
+        '''
+        df_file = io.StringIO(df_file_str)
+        self.assertEqual(freq_tools.read_df(df_file), df_dict)
+        
+    def test_write_df(self):
+        '''write_df() test'''
+        df_dict = {'a':5, 'b':3, 'c':1}
+        df_file = io.StringIO()
+        freq_tools.write_df(df_dict, df_file)
+        
+        df_file.seek(0)
+        self.assertEqual(freq_tools.read_df(df_file), df_dict)
             
-            
+    def test_compute_df(self):
+        doc1 = 'a b b     c d e e e e f'
+        doc2 = '  b           e         g g g h i'
+        doc3 = '  b b b b c d                 h  '
+        
+        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2, 'i':1}
+        
+        files = (io.StringIO(doc1), io.StringIO(doc2), io.StringIO(doc3))
+        self.assertEqual(freq_tools.compute_df(files), df_dict)
+    
+class TermVecTest(unittest.TestCase):
+    def test_dot_product(self):
+        '''dot_product() test using known inputs'''
+        v1 = {'a':1, 'b':2, 'c':0.5}
+        v2 = {'a':2,        'c':2, 'd':100}
+        
+        self.assertEqual(similarity.dot_product(v1, v2), 3)
+
+    def test_l2_norm(self):
+        '''l2_norm() test using known inputs'''
+        v = {'a':1, 'b':2, 'c':5}
+        
+        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
+
+    def test_magnitude(self):
+        '''magnitude() test using known inputs'''
+        v = {'a':1, 'b':2, 'c':5}
+        
+        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
+        
+    def test_mag_union(self):
+        '''mag_union() test using known inputs'''
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+        
+        self.assertEqual(similarity.mag_union(A, B), 14)
+    
+    def test_mag_intersect(self):
+        '''mag_intersect() test using known inputs'''
+        A = {'a':1, 'b':2, 'c':5}
+        B = {'a':1,        'c':2, 'd':3}
+        
+        self.assertEqual(similarity.mag_intersect(A, B), 3)
+    
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

@@ -34,10 +34,25 @@ $ python freq_tools --list doc_list -o output.idx
 Processing...
 
 '''
-from __future__ import division, absolute_import, print_function, \
-    unicode_literals
 
+from __future__ import (division, absolute_import, print_function,
+    unicode_literals)
+
+# boilerplate to allow running as script
+if __name__ == "__main__" and __package__ is None:
+    import sys, os
+    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    sys.path.insert(0, parent_dir)
+    import pysimsearch
+    __package__ = str("pysimsearch")
+    del sys, os
+
+# external modules
 import argparse
+
+# our modules
+from .exceptions import *
+from . import doc_reader
 
 def read_df(df_file):
     '''
@@ -68,36 +83,23 @@ def write_df(df_dict, df_file):
     for (term, df) in df_dict.items():
         df_file.write(u'{0}\t{1}\n'.format(term, df))
     
-def compute_df(filenames):
+def compute_df(files):
     '''
     Computes document frequency counts by processing a collection of files
     Returns a dictionary of the form {term: doc_freq}
     '''
     df_dict = {}
-    for filename in filenames:
-        try:
-            with open(filename) as df_file:
-                term_seen = set()
-                for line in df_file:
-                    for term in line.split():
-                        if term not in term_seen:
-                            if term not in df_dict:
-                                df_dict[term] = 0
-                            df_dict[term] += 1
-                            term_seen.add(term)
-        except IOError:
-            print("Couldn't open " + filename)
-            
+    for file in files:
+        term_seen = set()
+        for line in file:
+            for term in line.split():
+                if term not in term_seen:
+                    if term not in df_dict:
+                        df_dict[term] = 0
+                    df_dict[term] += 1
+                    term_seen.add(term)
+                    
     return df_dict
-
-# --- Exceptions ---
-class Error(Exception):
-    '''Base class for Exception types used in this module'''
-    pass
-
-class FileFormatException(Error):
-    '''Exception for invalid input file'''
-    pass
     
 # --- main() ---
 
@@ -130,7 +132,7 @@ def main():
 
     df_dict = compute_df(doc_list)
     for key in df_dict:
-        print('{}\t{}'.format(key.ljust(20), df_dict[key]))
+        print('{}\t{:>20}'.format(key, df_dict[key]))
 
 
 if __name__ == '__main__':

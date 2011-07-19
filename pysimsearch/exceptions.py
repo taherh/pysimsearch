@@ -39,3 +39,7 @@ class Error(Exception):
 class FileFormatException(Error):
     '''Exception for invalid input file'''
     pass
+
+class AbstractMethodException(Error):
+    '''Exception for abstract method call'''
+    pass

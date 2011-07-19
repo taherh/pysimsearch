@@ -1,6 +1,5 @@
 ﻿#!/usr/bin/env python
 
-
 # Copyright (c) 2011, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
 #
@@ -30,6 +29,21 @@
 
 '''
 @author: taherh
+
+Sample usage:
+
+from pysimsearch.sim_index import SimpleMemorySimIndex
+from pysimsearch import doc_reader
+
+sim_index = SimpleMemorySimIndex()
+sim_index.index_files(
+    doc_reader.get_named_text_files('http://www.stanford.edu/',
+                                    'http://www.berkeley.edu',
+                                    'http://www.ucla.edu',
+                                    'http://www.mit.edu'))
+print(sim_index.postings_for_term('university'))
+print(list(sim_index.docnames_with_terms('university', 'california')))
+
 '''
 
 
@@ -39,6 +53,7 @@ from __future__ import (division, absolute_import, print_function,
 
 from collections import defaultdict
 
+from .exceptions import *
 from . import doc_reader
 
 class SimIndex(object):
@@ -82,7 +97,7 @@ class SimIndex(object):
         # return sorted list
         return sorted(docs)
     
-    def docnames_with_terms(self, terms):
+    def docnames_with_terms(self, *terms):
         '''Returns a list of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
@@ -101,12 +116,20 @@ class SimpleMemorySimIndex(SimIndex):
     docid_to_name_map = {}
     term_index = defaultdict(list)
 
+    class Config(object):
+        lowercase = True
+    config = Config()
+    
     def __init__(self):
         pass
     
     def index_files(self, named_files):
         '''Build a similarity index over collection given in named_files
            named_files is an iterable of (filename, file) pairs
+           
+           Example:
+           sim_index.index_files(
+             doc_reader.get_named_text_files('a.txt', 'b.txt', 'c.txt'))
         '''
         for (name, _file) in named_files:
             with _file as file:  # create 'with' context for file
@@ -118,6 +141,8 @@ class SimpleMemorySimIndex(SimIndex):
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
         for (term, freq) in term_vec.iteritems():
+            if self.config.lowercase:
+                term = term.lower()
             self.term_index[term].append((docid, freq))
 
     def docid_to_name(self, docid):

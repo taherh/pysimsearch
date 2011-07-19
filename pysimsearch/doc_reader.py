@@ -60,9 +60,14 @@ def get_text_file(name):
         file = codecs.open(name, encoding='utf-8')
     return file
 
-def get_text_files(names):
+def get_text_files(*names):
     '''Returns iterator of files from filenames and/or urls'''
     return (get_text_file(name) for name in names)
+
+def get_named_text_files(*names):
+    '''Returns an iterator of (filename, file) tuples from filenames
+       and/or urls (convenience function)'''
+    return zip(names, get_text_files(*names))
     
 def term_vec(file):
     '''

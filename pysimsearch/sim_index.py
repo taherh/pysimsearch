@@ -47,14 +47,27 @@ class SimIndex(object):
        Defines interface as well as provides default implementation for
        several methods.
     '''
-
-    def index_files(self, filenames):
-        '''Build a similarity index over the documents represented
-           by filenames'''
-        raise AbstractMethodException()
     
+    def index_files(self, named_files):
+        '''Build a similarity index over collection given in named_files
+           named_files is an iterable of (filename, file) pairs
+        '''
+        raise AbstractMethodException()
+
+    def index_filenames(self, filenames):
+        '''Build a similarity index over files given by filenames'''
+        return self.index_files(zip(filenames, doc_reader.get_text_files(filenames)))
+    
+    def docid_to_name(self, docid):
+        '''Returns document name for a given docid'''
+        raise AbstractMethodException()
+        
+    def name_to_docid(self, name):
+        '''Returns docid for a given document name'''
+        raise AbstractMethodException()
+
     def postings_for_term(self, term):
-        '''Return list of (docid, frequency) pairs for docs that contain term'''
+        '''Return list of (docid, frequency) tuples for docs that contain term'''
         raise AbstractMethodException()
     
     def docids_with_terms(self, terms):
@@ -77,17 +90,10 @@ class SimIndex(object):
         '''Return documents similar to doc'''
         raise AbstractMethodException()
 
-    def docid_to_name(self, docid):
-        '''Returns document name for a given docid'''
-        raise AbstractMethodException()
-        
-    def name_to_docid(self, name):
-        '''Returns docid for a given document name'''
-        raise AbstractMethodException()
 
 
-class MemorySimIndex(SimIndex):
-    '''Implementation of SimIndex using in-memory data structures'''
+class SimpleMemorySimIndex(SimIndex):
+    '''Simple implementation of SimIndex using in-memory data structures'''
 
     _next_docid = 0
     
@@ -98,19 +104,27 @@ class MemorySimIndex(SimIndex):
     def __init__(self):
         pass
     
-    def index_files(self, filenames):
-        '''Build a similarity index over collection given in filenames'''
-        for name in filenames:
-            self.name_to_docid_map[name] = self._next_docid
-            self.docid_to_name_map[self._next_docid] = name
-            with doc_reader.get_text_file(name) as file:
+    def index_files(self, named_files):
+        '''Build a similarity index over collection given in named_files
+           named_files is an iterable of (filename, file) pairs
+        '''
+        for (name, _file) in named_files:
+            with _file as file:  # create 'with' context for file
+                self.name_to_docid_map[name] = self._next_docid
+                self.docid_to_name_map[self._next_docid] = name
                 self._add_vec(self._next_docid, doc_reader.term_vec(file))
-            self._next_docid += 1
+                self._next_docid += 1
 
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
         for (term, freq) in term_vec.iteritems():
             self.term_index[term].append((docid, freq))
+
+    def docid_to_name(self, docid):
+        return self.docid_to_name_map[docid]
+        
+    def name_to_docid(self, name):
+        return self.name_to_docid_map[name]
 
     def postings_for_term(self, term):
         '''Returns list of (docid, freq) tuples for documents containing
@@ -120,10 +134,3 @@ class MemorySimIndex(SimIndex):
     def query(self, doc):
         '''Return documents similar to doc'''
         pass
-
-    def docid_to_name(self, docid):
-        return self.docid_to_name_map[docid]
-        
-    def name_to_docid(self, name):
-        return self.name_to_docid_map[name]
-

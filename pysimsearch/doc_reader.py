@@ -46,7 +46,7 @@ from lxml.html.clean import clean_html
 _HTTP = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode
 
 def get_text_file(name):
-    '''Returns a text stream from either a pysical file or a url'''
+    '''Returns a text stream from filename or url'''
     file = None
     http_pattern = '^http://'
     if re.search(http_pattern, name):
@@ -60,6 +60,10 @@ def get_text_file(name):
         file = codecs.open(name, encoding='utf-8')
     return file
 
+def get_text_files(names):
+    '''Returns iterator of files from filenames and/or urls'''
+    return (get_text_file(name) for name in names)
+    
 def term_vec(file):
     '''
     Returns a term vector for 'file', represented as a dictionary

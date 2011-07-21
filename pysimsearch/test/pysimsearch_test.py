@@ -31,7 +31,8 @@
 
 To run unittests, run 'nosetests' from the test directory
 '''
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import(division, absolute_import, print_function,
+                       unicode_literals)
 
 import unittest
 
@@ -44,6 +45,7 @@ import sys
 from pysimsearch import similarity
 from pysimsearch import freq_tools
 from pysimsearch import doc_reader
+from pysimsearch.sim_index import SimpleMemorySimIndex
 
 class SimilarityTest(unittest.TestCase):
     testdata_dir = None  # Will be set in setUp()
@@ -135,7 +137,8 @@ class FreqToolsTest(unittest.TestCase):
         doc2 = '  b           e         g g g h i'
         doc3 = '  b b b b c d                 h  '
         
-        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2, 'i':1}
+        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2,
+                   'i':1}
         
         files = (io.StringIO(doc1), io.StringIO(doc2), io.StringIO(doc3))
         self.assertEqual(freq_tools.compute_df(files), df_dict)
@@ -174,6 +177,67 @@ class TermVecTest(unittest.TestCase):
         
         self.assertEqual(similarity.mag_intersect(A, B), 3)
     
+class SimIndexTest(unittest.TestCase):
+    sim_index = None
+
+    # test documents
+    docs = [ ('doc1', "hello there world    "),
+             ('doc2', "hello       world    "),
+             ('doc3', "hello there       bob") ]
+  
+    def setUp(self):
+        self.sim_index = SimpleMemorySimIndex()
+
+        named_files = (
+            (docname, io.StringIO(doc))
+                for (docname, doc) in self.docs)
+        
+        self.sim_index.index_files(named_files)
+    
+    def tearDown(self):
+        pass
+        
+    def test_docname_docid_translation(self):
+        '''test docname_to_docid()/docid_to_docname() using known data'''
+        
+        for (docname, doc) in self.docs:
+                self.assertEqual(docname,
+                             self.sim_index.docid_to_name(
+                                self.sim_index.name_to_docid(docname)))
+
+    
+    golden_postings = { 'hello': {'doc1', 'doc2', 'doc3'},
+                        'there': {'doc1', 'doc3'},
+                        'world': {'doc1', 'doc2'},
+                        'bob': {'doc3'} }
+    def test_postings_list(self):
+        '''test postings_list() using known data'''
+
+        for term in self.golden_postings:    
+            docnames = { self.sim_index.docid_to_name(docid)
+                            for (docid, freq) in
+                                self.sim_index.postings_list(term)}
+            self.assertEqual(docnames, self.golden_postings[term])
+
+
+    def test_docnames_with_terms(self):
+        '''test docnames_with_terms() using known data'''
+
+        # we can reuse golden_postings to provide some test input here
+        golden_hits = { (term,): docnames
+            for (term, docnames) in self.golden_postings.items() }
+        # and of course some multiword queries as well
+        golden_hits.update({ ('hello', 'there'): {'doc1', 'doc3'},
+                             ('there', 'world'): {'doc1'},
+                             ('hello', 'world'): {'doc1', 'doc2'} })
+        
+        for (terms, golden_docnames) in golden_hits.items():
+            self.assertEqual(set(golden_docnames),
+                        set(self.sim_index.docnames_with_terms(*terms)),
+                        msg="{} -- {}".format(
+                            list(golden_docnames),
+                            list(self.sim_index.docnames_with_terms(*terms))))
+        
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

@@ -74,7 +74,7 @@ def measure_similarity(file_a, file_b, sim_func = None):
     
     return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
 
-def pairwise_compare(filenames):
+def pairwise_compare(*filenames):
     '''
     Does a pairwise comparison of the documents specified by 'filenames'
     and prints their pairwise similarities
@@ -136,7 +136,7 @@ def main():
         raise Error("Sorry, you must specify at least two documents "
                     "to compare.")  
 
-    pairwise_compare(doc_list)
+    pairwise_compare(*doc_list)
 
 if __name__ == '__main__':
     main()

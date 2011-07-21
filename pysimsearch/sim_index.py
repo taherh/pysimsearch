@@ -41,7 +41,7 @@ sim_index.index_files(
                                     'http://www.berkeley.edu',
                                     'http://www.ucla.edu',
                                     'http://www.mit.edu'))
-print(sim_index.postings_for_term('university'))
+print(sim_index.postings_list('university'))
 print(list(sim_index.docnames_with_terms('university', 'california')))
 
 '''
@@ -71,7 +71,8 @@ class SimIndex(object):
 
     def index_filenames(self, filenames):
         '''Build a similarity index over files given by filenames'''
-        return self.index_files(zip(filenames, doc_reader.get_text_files(filenames)))
+        return self.index_files(zip(filenames,
+                                    doc_reader.get_text_files(filenames)))
     
     def docid_to_name(self, docid):
         '''Returns document name for a given docid'''
@@ -81,7 +82,7 @@ class SimIndex(object):
         '''Returns docid for a given document name'''
         raise AbstractMethodException()
 
-    def postings_for_term(self, term):
+    def postings_list(self, term):
         '''Return list of (docid, frequency) tuples for docs that contain term'''
         raise AbstractMethodException()
     
@@ -90,9 +91,10 @@ class SimIndex(object):
         docs = None  # will hold a set of matching docids
         for term in terms:
             if docs is None:
-                docs = set((x[0] for x in self.postings_for_term(term)))
+                docs = set((x[0] for x in self.postings_list(term)))
             else:
-                docs.intersection_update((x[0] for x in self.postings_for_term(term)))
+                docs.intersection_update(
+                    (x[0] for x in self.postings_list(term)))
                 
         # return sorted list
         return sorted(docs)
@@ -151,7 +153,7 @@ class SimpleMemorySimIndex(SimIndex):
     def name_to_docid(self, name):
         return self.name_to_docid_map[name]
 
-    def postings_for_term(self, term):
+    def postings_list(self, term):
         '''Returns list of (docid, freq) tuples for documents containing
            term'''
         return self.term_index[term]

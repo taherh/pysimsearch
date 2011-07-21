@@ -1,10 +1,16 @@
 PySimSearch
 
-Python library for similarity-search routines.
-Primarily for pedagogical purposes.
+Python library for indexing and similarity-search.
+This library is primarily for pedagogical purposes, not production usage.  The
+code here is meant to illustrate the basic workings of similarity and indexing
+engines, without worrying about scalability.  Although scalability is essential
+for any real indexing engine, the additional complexity that introduces often
+obscures the simple concepts that drive modern information retrieval systems.
 
-Sample usage
-------------
+See sample.py for sample api usage
+
+Sample command-line usage
+--------------------------
 
 Compute pair-wise similarity of 3 webpages:
 bash$ python pysimsearch/similarity.py http://www.stanford.edu/ http://www.berkeley.edu/ http://www.mit.edu/

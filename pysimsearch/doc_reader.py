@@ -43,7 +43,7 @@ import lxml.html
 from lxml.html.clean import clean_html
 
 # get_text_file() needs an http object
-_HTTP = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode
+_HTTP = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode arg
 
 def get_text_file(name):
     '''Returns a text stream from filename or url'''

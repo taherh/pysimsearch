@@ -110,7 +110,10 @@ class SimIndex(object):
 
 
 class SimpleMemorySimIndex(SimIndex):
-    '''Simple implementation of SimIndex using in-memory data structures'''
+    '''
+    Simple implementation of SimIndex using in-memory data structures.
+    (Not meant to scale to large datasets)
+    '''
 
     _next_docid = 0
     
@@ -122,7 +125,8 @@ class SimpleMemorySimIndex(SimIndex):
         lowercase = True
     config = Config()
     
-    def __init__(self):
+    def __init__(self, config = Config()):
+        self.config = config
         pass
     
     def index_files(self, named_files):
@@ -157,7 +161,7 @@ class SimpleMemorySimIndex(SimIndex):
         '''Returns list of (docid, freq) tuples for documents containing
            term'''
         return self.term_index[term]
-        
+    
     def query(self, doc):
         '''Return documents similar to doc'''
         pass

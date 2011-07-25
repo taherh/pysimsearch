@@ -30,7 +30,7 @@
 @author: taherh
 
 Sample usage as a script:
-$ python freq_tools --list doc_list -o output.idx
+$ python freq_tools --list doc_list -o output.df
 Processing...
 
 '''
@@ -49,6 +49,7 @@ if __name__ == "__main__" and __package__ is None:
 
 # external modules
 import argparse
+import sys
 
 # our modules
 from .exceptions import *
@@ -116,6 +117,10 @@ def main():
 
     args = parser.parse_args()
 
+    output_file = sys.stdout
+    if args.output != None:
+        output_file = open(args.output, "w")
+        
     doc_list = []
     if args.list != None:
         try:
@@ -127,13 +132,17 @@ def main():
 
     doc_list.extend(args.doc)
 
+    print("Processing {}".format(str(doc_list)))
+    
     if len(doc_list) == 0:
         raise Error("Sorry, you must specify at least one document.")  
 
-    df_dict = compute_df(doc_list)
+    df_dict = compute_df(doc_reader.get_text_files(*doc_list))
     for key in df_dict:
-        print('{}\t{:>20}'.format(key, df_dict[key]))
+        print('{}\t{:>20}'.format(key, df_dict[key]), file=output_file)
 
+    if output_file != sys.stdout:
+        output_file.close()
 
 if __name__ == '__main__':
     main()

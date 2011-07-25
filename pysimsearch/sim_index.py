@@ -51,6 +51,7 @@ from __future__ import (division, absolute_import, print_function,
         unicode_literals)
 
 
+import abc
 from collections import defaultdict
 
 from .exceptions import *
@@ -62,29 +63,47 @@ class SimIndex(object):
        Defines interface as well as provides default implementation for
        several methods.
     '''
+
+    __metaclass__ = abc.ABCMeta
     
+    config = {
+        'lowercase': True
+    }
+    
+    def update_config(self, config):
+        '''Pass in configuration in config map'''
+        self.config.update(config)
+
+    @abc.abstractmethod
     def index_files(self, named_files):
-        '''Build a similarity index over collection given in named_files
-           named_files is an iterable of (filename, file) pairs
         '''
-        raise AbstractMethodException()
+        Build a similarity index over collection given in named_files
+        named_files is an iterable of (filename, file) pairs.
+        '''
+        return
 
     def index_filenames(self, filenames):
-        '''Build a similarity index over files given by filenames'''
+        '''
+        Build a similarity index over files given by filenames
+        (Convenience method that wraps index_files())
+        '''
         return self.index_files(zip(filenames,
                                     doc_reader.get_text_files(filenames)))
     
+    @abc.abstractmethod
     def docid_to_name(self, docid):
         '''Returns document name for a given docid'''
-        raise AbstractMethodException()
+        return
         
+    @abc.abstractmethod
     def name_to_docid(self, name):
         '''Returns docid for a given document name'''
-        raise AbstractMethodException()
+        return
 
+    @abc.abstractmethod
     def postings_list(self, term):
         '''Return list of (docid, frequency) tuples for docs that contain term'''
-        raise AbstractMethodException()
+        return
     
     def docids_with_terms(self, terms):
         '''Returns a list of docids of docs containing terms'''
@@ -103,9 +122,10 @@ class SimIndex(object):
         '''Returns a list of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
+    @abc.abstractmethod
     def query(self, doc):
         '''Return documents similar to doc'''
-        raise AbstractMethodException()
+        return
 
 
 
@@ -120,17 +140,13 @@ class SimpleMemorySimIndex(SimIndex):
     name_to_docid_map = {}
     docid_to_name_map = {}
     term_index = defaultdict(list)
-
-    class Config(object):
-        lowercase = True
-    config = Config()
     
-    def __init__(self, config = Config()):
-        self.config = config
+    def __init__(self):
         pass
     
     def index_files(self, named_files):
-        '''Build a similarity index over collection given in named_files
+        '''
+        Build a similarity index over collection given in named_files
            named_files is an iterable of (filename, file) pairs
            
            Example:
@@ -147,7 +163,7 @@ class SimpleMemorySimIndex(SimIndex):
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
         for (term, freq) in term_vec.iteritems():
-            if self.config.lowercase:
+            if self.config['lowercase']:
                 term = term.lower()
             self.term_index[term].append((docid, freq))
 

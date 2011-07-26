@@ -1,3 +1,4 @@
 include LICENSE
+include sample.py
 recursive-include docs *.html *.css *.png *.gif
 recursive-include pysimsearch/test/data *

@@ -27,12 +27,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-@author: taherh
+Sample usage as a script::
 
-Sample usage as a script:
-$ python freq_tools --list doc_list -o output.df
-Processing...
-
+    $ python freq_tools --list doc_list -o output.df
+    Processing...
 '''
 
 from __future__ import (division, absolute_import, print_function,

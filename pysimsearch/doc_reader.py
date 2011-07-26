@@ -27,13 +27,11 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-@author: taherh
-
 Utilities for creating term vectors from data
 '''
 
-from __future__ import division, absolute_import, print_function, \
-    unicode_literals
+from __future__ import(division, absolute_import, print_function,
+                       unicode_literals)
 
 import codecs
 import re
@@ -65,8 +63,10 @@ def get_text_files(*names):
     return (get_text_file(name) for name in names)
 
 def get_named_text_files(*names):
-    '''Returns an iterator of (filename, file) tuples from filenames
-       and/or urls (convenience function)'''
+    '''
+    Returns an iterator of (filename, file) tuples from filenames
+    and/or urls (convenience function)
+    '''
     return zip(names, get_text_files(*names))
     
 def term_vec(file):

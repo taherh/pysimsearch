@@ -27,14 +27,13 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-@author: taherh
+Sample usage as a script::
 
-Sample usage as a script:
-$ python similarity.py http://www.stanford.edu/ http://www.berkeley.edu/ http://www.mit.edu/
-Comparing files ['http://www.stanford.edu/', 'http://www.berkeley.edu/', 'http://www.mit.edu/']
-sim(http://www.stanford.edu/,http://www.berkeley.edu/)=0.322771960247
-sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
-sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
+    $ python similarity.py http://www.stanford.edu/ http://www.berkeley.edu/ http://www.mit.edu/
+    Comparing files ['http://www.stanford.edu/', 'http://www.berkeley.edu/', 'http://www.mit.edu/']
+    sim(http://www.stanford.edu/,http://www.berkeley.edu/)=0.322771960247
+    sim(http://www.stanford.edu/,http://www.mit.edu/)=0.142787018368
+    sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741
 
 '''
 

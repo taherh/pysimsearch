@@ -27,8 +27,6 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-@author: taherh
-
 Exception classes
 '''
 
@@ -38,8 +36,4 @@ class Error(Exception):
 
 class FileFormatException(Error):
     '''Exception for invalid input file'''
-    pass
-
-class AbstractMethodException(Error):
-    '''Exception for abstract method call'''
     pass

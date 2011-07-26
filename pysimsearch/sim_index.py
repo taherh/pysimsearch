@@ -28,28 +28,23 @@
 
 
 '''
-@author: taherh
+Sample usage::
 
-Sample usage:
+    from pysimsearch.sim_index import SimpleMemorySimIndex
+    from pysimsearch import doc_reader
 
-from pysimsearch.sim_index import SimpleMemorySimIndex
-from pysimsearch import doc_reader
-
-sim_index = SimpleMemorySimIndex()
-sim_index.index_files(
-    doc_reader.get_named_text_files('http://www.stanford.edu/',
-                                    'http://www.berkeley.edu',
-                                    'http://www.ucla.edu',
-                                    'http://www.mit.edu'))
-print(sim_index.postings_list('university'))
-print(list(sim_index.docnames_with_terms('university', 'california')))
-
+    sim_index = SimpleMemorySimIndex()
+    sim_index.index_files(
+        doc_reader.get_named_text_files('http://www.stanford.edu/',
+                                        'http://www.berkeley.edu',
+                                        'http://www.ucla.edu',
+                                        'http://www.mit.edu'))
+    print(sim_index.postings_list('university'))
+    print(list(sim_index.docnames_with_terms('university', 'california')))
 '''
-
 
 from __future__ import (division, absolute_import, print_function,
         unicode_literals)
-
 
 import abc
 from collections import defaultdict
@@ -102,7 +97,9 @@ class SimIndex(object):
 
     @abc.abstractmethod
     def postings_list(self, term):
-        '''Return list of (docid, frequency) tuples for docs that contain term'''
+        '''
+        Return list of (docid, frequency) tuples for docs that contain term
+        '''
         return
     
     def docids_with_terms(self, terms):
@@ -147,11 +144,7 @@ class SimpleMemorySimIndex(SimIndex):
     def index_files(self, named_files):
         '''
         Build a similarity index over collection given in named_files
-           named_files is an iterable of (filename, file) pairs
-           
-           Example:
-           sim_index.index_files(
-             doc_reader.get_named_text_files('a.txt', 'b.txt', 'c.txt'))
+        named_files is an iterable of (filename, file) pairs
         '''
         for (name, _file) in named_files:
             with _file as file:  # create 'with' context for file
@@ -174,8 +167,9 @@ class SimpleMemorySimIndex(SimIndex):
         return self.name_to_docid_map[name]
 
     def postings_list(self, term):
-        '''Returns list of (docid, freq) tuples for documents containing
-           term'''
+        '''
+        Returns list of (docid, freq) tuples for documents containing term
+        '''
         return self.term_index[term]
     
     def query(self, doc):

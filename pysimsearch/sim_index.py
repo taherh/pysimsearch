@@ -65,8 +65,8 @@ class SimIndex(object):
         'lowercase': True
     }
     
-    def update_config(self, config):
-        '''Pass in configuration in config map'''
+    def update_config(self, **config):
+        '''Update any configuration variables'''
         self.config.update(config)
 
     @abc.abstractmethod
@@ -170,6 +170,8 @@ class SimpleMemorySimIndex(SimIndex):
         '''
         Returns list of (docid, freq) tuples for documents containing term
         '''
+        if self.config['lowercase']:
+            term = term.lower()
         return self.term_index[term]
     
     def query(self, doc):

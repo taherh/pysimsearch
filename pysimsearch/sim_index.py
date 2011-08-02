@@ -28,6 +28,8 @@
 
 
 '''
+Similarity index module.
+
 Sample usage::
 
     from pysimsearch.sim_index import SimpleMemorySimIndex
@@ -51,12 +53,18 @@ from collections import defaultdict
 
 from .exceptions import *
 from . import doc_reader
+from . import query_scorer
 
 class SimIndex(object):
     '''
-       Base class for similarity indexes
-       Defines interface as well as provides default implementation for
-       several methods.
+    Base class for similarity indexes
+    
+    Defines interface as well as provides default implementation for
+    several methods.
+    
+    Attributes:
+        config: dictionary of configuration variables
+        
     '''
 
     __metaclass__ = abc.ABCMeta
@@ -65,9 +73,15 @@ class SimIndex(object):
         'lowercase': True
     }
     
+    query_scorer = None
+    
     def update_config(self, **config):
         '''Update any configuration variables'''
         self.config.update(config)
+        
+    def set_query_scorer(self, query_scorer):
+        '''Set the query_scorer'''
+        self.query_scorer = query_scorer
 
     @abc.abstractmethod
     def index_files(self, named_files):
@@ -119,10 +133,23 @@ class SimIndex(object):
         '''Returns a list of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
-    @abc.abstractmethod
-    def query(self, doc):
-        '''Return documents similar to doc'''
-        return
+    def query(self, query_vec):
+        '''
+        Finds documents similar to query_vec
+        
+        Params:
+            query_vec: term vector representing query document
+        
+        Returns:
+            A iterable of (docname, score) tuples soreted by score
+        '''
+        
+        postings_lists = [(term, self.postings_list(term))
+            for term in query_vec]
+        
+        hits = self.query_scorer.score_docs(query_vec, postings_lists)
+        print("hits: {}".format(str(hits)))
+        return ((self.docid_to_name(docid), score) for (docid, score) in hits)
 
 
 
@@ -174,6 +201,3 @@ class SimpleMemorySimIndex(SimIndex):
             term = term.lower()
         return self.term_index[term]
     
-    def query(self, doc):
-        '''Return documents similar to doc'''
-        pass

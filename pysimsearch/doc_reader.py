@@ -73,6 +73,8 @@ def term_vec(file):
     '''
     Returns a term vector for 'file', represented as a dictionary
     of the form {term: frequency}
+    
+    Takes ownership of file   
     '''
     
     with file as f:
@@ -83,3 +85,13 @@ def term_vec(file):
                     tf_dict[term] = 0
                 tf_dict[term] += 1
         return tf_dict
+    
+def term_vec_from_string(s):
+    '''
+    Returns term vector for string s, represented as a dictionary of the
+    from {term: frequency}
+
+    (Convenience function - wraps term_vec())
+    '''
+    return term_vec(io.StringIO(s))
+    

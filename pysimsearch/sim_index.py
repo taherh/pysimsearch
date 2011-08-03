@@ -50,6 +50,7 @@ from __future__ import (division, absolute_import, print_function,
 
 import abc
 from collections import defaultdict
+import cPickle
 import sys
 
 from .exceptions import *
@@ -89,6 +90,8 @@ class SimIndex(object):
         '''
         Build a similarity index over collection given in named_files
         named_files is an iterable of (filename, file) pairs.
+        
+        Takes ownership of (and consumes) named_files
         '''
         return
 
@@ -202,4 +205,19 @@ class SimpleMemorySimIndex(SimIndex):
         if self.config['lowercase']:
             term = term.lower()
         return self.term_index[term]
+        
+    def save(self, file):
+        '''
+        Saved index to file
+        '''
+        cPickle.dump(self, file)
+        
+    @staticmethod
+    def load(file):
+        '''
+        Static method that loads index from disk and returns a
+        SimpleMemorySimIndex
+        '''
+        return cPickle.load(file)
+        
     

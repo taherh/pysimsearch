@@ -279,6 +279,15 @@ class SimIndexTest(unittest.TestCase):
             self.assertEqual(golden_doc_hits,
                              dict(self.sim_index.query(query_vec)),
                              msg = "query={}".format(query))
+            
+    def test_save_load(self):
+        '''Test save()/load() functionality'''
+        with io.BytesIO() as output:
+            self.sim_index.save(output)
+            output.seek(0)
+            loaded_sim_index = SimpleMemorySimIndex.load(output)
+        self.sim_index = loaded_sim_index
+        self.test_query()  # make sure test_query() still works
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

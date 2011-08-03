@@ -74,13 +74,16 @@ class SimpleCountQueryScorer(object):
     
     def score_docs(self, query_vec, postings_lists):
         '''
-        Scores documents' similarities to query using simple term counts
+        Scores documents' similarities to query using simple term counts.
+        If a term appears multiple times in query, the count for that
+        term is multiplied by the query frequency when accumulating hits.
         '''
         
         doc_hit_map = defaultdict(int)
         for (term, postings_list) in postings_lists:
+            query_term_freq = query_vec[term]
             for (docid, freq) in postings_list:
-                doc_hit_map[docid] += freq
+                doc_hit_map[docid] += freq * query_term_freq
         
         # construct list of tuples sorted by value
         return sorted(doc_hit_map.iteritems(),

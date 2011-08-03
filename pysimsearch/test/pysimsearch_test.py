@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-@author: taherh
+Unittests for pysimsearch package
 
 To run unittests, run 'nosetests' from the test directory
 '''
@@ -46,10 +46,12 @@ from pysimsearch import similarity
 from pysimsearch import freq_tools
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMemorySimIndex
+from pysimsearch import query_scorer
+
 
 class SimilarityTest(unittest.TestCase):
+    longMessage = True
     testdata_dir = None  # Will be set in setUp()
-    expected_sims = dict()
 
     def setUp(self):
         # set testdata_dir
@@ -74,6 +76,7 @@ class SimilarityTest(unittest.TestCase):
         input_filenames.sort()
                 
         # read expected results
+        expected_sims = dict()
         with open(self.testdata_dir + 'expected_results') as \
                 expected_results_file:
             for line in expected_results_file:
@@ -81,20 +84,20 @@ class SimilarityTest(unittest.TestCase):
                 self.assertTrue(fname_a < fname_b,
                              'expected_results: require fname_a < fname_b: ' + 
                              line)
-                self.expected_sims[(fname_a,fname_b)] = float(expected_sim)
+                expected_sims[(fname_a,fname_b)] = float(expected_sim)
                 
         # check computed similarities against expected similarities
-        for (fname_a, fname_b) in self.expected_sims:
+        for (fname_a, fname_b) in expected_sims:
             print('Comparing {0},{1}'.format(fname_a, fname_b))
             with open(self.testdata_dir + fname_a) as file_a:
                 with open(self.testdata_dir + fname_b) as file_b:
                     sim = similarity.measure_similarity(file_a, file_b)
                     self.assertAlmostEqual(
-                            sim, self.expected_sims[(fname_a, fname_b)], 
+                            sim, expected_sims[(fname_a, fname_b)], 
                             places = 3,
                             msg = 'Mismatch for pair {0}: got {1}, expected {2}'.
                             format((fname_a, fname_b), sim, 
-                                   self.expected_sims[(fname_a, fname_b)]))
+                                   expected_sims[(fname_a, fname_b)]))
 
     def test_cosine_sim(self):
         '''cosine_sim() test using known inputs'''
@@ -111,6 +114,8 @@ class SimilarityTest(unittest.TestCase):
         self.assertEqual(similarity.jaccard_sim(A, B), 3 / 14)
     
 class FreqToolsTest(unittest.TestCase):
+    longMessage = True
+
     def test_read_df(self):
         '''read_df() test'''
         df_dict = {'a':5, 'b':3, 'c':1}
@@ -144,6 +149,8 @@ class FreqToolsTest(unittest.TestCase):
         self.assertEqual(freq_tools.compute_df(files), df_dict)
     
 class TermVecTest(unittest.TestCase):
+    longMessage = True
+
     def test_dot_product(self):
         '''dot_product() test using known inputs'''
         v1 = {'a':1, 'b':2, 'c':0.5}
@@ -178,66 +185,101 @@ class TermVecTest(unittest.TestCase):
         self.assertEqual(similarity.mag_intersect(A, B), 3)
     
 class SimIndexTest(unittest.TestCase):
+    longMessage = True
+
     sim_index = None
 
-    # test documents
-    docs = [ ('doc1', "hello there world    "),
-             ('doc2', "hello       world    "),
-             ('doc3', "hello there       bob") ]
-  
+    # Test documents
+    docs = [ ('doc1', "hello there world     hello"),
+             ('doc2', "hello       world          "),
+             ('doc3', "hello there       bob      ") ]
+    
+    # Postings that correspond to test documents
+    golden_postings = { 'hello': {'doc1': 2, 'doc2': 1, 'doc3': 1},
+                        'there': {'doc1': 1, 'doc3': 1},
+                        'world': {'doc1': 1, 'doc2': 1},
+                        'bob': {'doc3': 1} }
+
+    # Golden hits data (Conjunctive: Requires presence of all terms)
+    #
+    # We can reuse golden_postings to provide some test input here
+    golden_conj_hits = { term: set(postings.keys())
+        for (term, postings) in golden_postings.items() }
+    # and of course throw in some multiword queries as well
+    golden_conj_hits.update({ "hello there": {'doc1', 'doc3'},
+                              "there world": {'doc1'},
+                              "hello world": {'doc1', 'doc2'} })
+    
+    # Golden hits data (frequencies are simple match-counts between query terms
+    # and document terms). (Disjunctive: requires any term to be present)
+    #
+    # We can reuse golden_postings to provide some test input here
+    golden_scored_hits = { term: docnames
+        for (term, docnames) in golden_postings.items() }
+    # and of course throw in some multiword queries as well
+    golden_scored_hits.update({ "hello there": {'doc1': 3, 'doc2': 1, 'doc3': 2},
+                                "there world": {'doc1': 2, 'doc2': 1, 'doc3': 1},
+                                "hello world": {'doc1': 3, 'doc2': 2, 'doc3': 1} })
+    
     def setUp(self):
         self.sim_index = SimpleMemorySimIndex()
 
-        named_files = (
-            (docname, io.StringIO(doc))
-                for (docname, doc) in self.docs)
-        
+        named_files = ((docname, io.StringIO(doc))
+                            for (docname, doc) in self.docs)
         self.sim_index.index_files(named_files)
     
     def tearDown(self):
         pass
         
     def test_docname_docid_translation(self):
-        '''test docname_to_docid()/docid_to_docname() using known data'''
-        
+        '''Test docname_to_docid()/docid_to_docname() using known data'''
+
         for (docname, doc) in self.docs:
                 self.assertEqual(docname,
                              self.sim_index.docid_to_name(
                                 self.sim_index.name_to_docid(docname)))
 
-    
-    golden_postings = { 'hello': {'doc1', 'doc2', 'doc3'},
-                        'there': {'doc1', 'doc3'},
-                        'world': {'doc1', 'doc2'},
-                        'bob': {'doc3'} }
     def test_postings_list(self):
-        '''test postings_list() using known data'''
+        '''Test postings_list() using known data
+        
+        We use sets instead of lists to more easily allow equality
+        comparison with golden data.
+        '''
 
         for term in self.golden_postings:    
-            docnames = { self.sim_index.docid_to_name(docid)
-                            for (docid, freq) in
-                                self.sim_index.postings_list(term)}
-            self.assertEqual(docnames, self.golden_postings[term])
-
+            translated_postings = {
+                self.sim_index.docid_to_name(docid): freq
+                    for (docid, freq) in
+                            self.sim_index.postings_list(term)
+                }
+            self.assertEqual(translated_postings,
+                             self.golden_postings[term])
 
     def test_docnames_with_terms(self):
-        '''test docnames_with_terms() using known data'''
+        '''Test docnames_with_terms() using known data
+        
+        We use sets instead of lists to more easily allow equality
+        comparison with golden data.assertE
+        '''
 
-        # we can reuse golden_postings to provide some test input here
-        golden_hits = { (term,): docnames
-            for (term, docnames) in self.golden_postings.items() }
-        # and of course some multiword queries as well
-        golden_hits.update({ ('hello', 'there'): {'doc1', 'doc3'},
-                             ('there', 'world'): {'doc1'},
-                             ('hello', 'world'): {'doc1', 'doc2'} })
-        
-        for (terms, golden_docnames) in golden_hits.items():
-            self.assertEqual(set(golden_docnames),
-                        set(self.sim_index.docnames_with_terms(*terms)),
-                        msg="{} -- {}".format(
-                            list(golden_docnames),
-                            list(self.sim_index.docnames_with_terms(*terms))))
-        
+        # We unpack the golden hit lists, construct a golden set of docnames
+        # for the hits, and compare with sim_index.docnames_with_terms()
+        for (query, golden_doc_hits) in self.golden_conj_hits.items():
+            query_vec = doc_reader.term_vec_from_string(query)
+            terms = [term for (term, freq) in query_vec.items()]
+            
+            self.assertEqual(golden_doc_hits,
+                             set(self.sim_index.docnames_with_terms(*terms)))
+
+    def test_query(self):
+        '''Test query() using known data'''
+        self.sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+        for (query, golden_doc_hits) in self.golden_scored_hits.items():
+            query_vec = doc_reader.term_vec_from_string(query)
+            self.assertEqual(golden_doc_hits,
+                             dict(self.sim_index.query(query_vec)),
+                             msg = "query={}".format(query))
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

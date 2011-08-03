@@ -50,6 +50,7 @@ from __future__ import (division, absolute_import, print_function,
 
 import abc
 from collections import defaultdict
+import sys
 
 from .exceptions import *
 from . import doc_reader
@@ -148,7 +149,6 @@ class SimIndex(object):
             for term in query_vec]
         
         hits = self.query_scorer.score_docs(query_vec, postings_lists)
-        print("hits: {}".format(str(hits)))
         return ((self.docid_to_name(docid), score) for (docid, score) in hits)
 
 
@@ -161,12 +161,14 @@ class SimpleMemorySimIndex(SimIndex):
 
     _next_docid = 0
     
-    name_to_docid_map = {}
-    docid_to_name_map = {}
-    term_index = defaultdict(list)
+    name_to_docid_map = None
+    docid_to_name_map = None
+    term_index = None
     
     def __init__(self):
-        pass
+        self.name_to_docid_map = {}
+        self.docid_to_name_map = {}
+        self.term_index = defaultdict(list)        
     
     def index_files(self, named_files):
         '''

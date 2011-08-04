@@ -7,7 +7,7 @@ setup(
       author = "Taher Haveliwala",
       author_email = "oss@taherh.org",
       url = "https://github.com/taherh/pysimsearch",
-      download_url = "https://github.com/downloads/taherh/pysimsearch/pysimsearch-0.23.tar.gz",
+#      download_url = "https://github.com/downloads/taherh/pysimsearch/pysimsearch-0.23.tar.gz",
       keywords = ["similarity"],
       requires = ["httplib2", "lxml"],
       license = "BSD License",

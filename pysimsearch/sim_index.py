@@ -43,6 +43,10 @@ Sample usage::
                                         'http://www.mit.edu'))
     print(sim_index.postings_list('university'))
     print(list(sim_index.docnames_with_terms('university', 'california')))
+    
+    sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+    print(list(sim_index.query(
+        doc_reader.term_vec_from_string("stanford university"))))
 '''
 
 from __future__ import (division, absolute_import, print_function,

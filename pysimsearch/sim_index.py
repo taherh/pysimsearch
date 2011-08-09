@@ -54,7 +54,7 @@ from __future__ import (division, absolute_import, print_function,
 
 import abc
 from collections import defaultdict
-import pickle
+import cPickle as pickle
 import itertools
 import sys
 

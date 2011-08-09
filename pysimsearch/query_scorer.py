@@ -111,6 +111,7 @@ class CosineQueryScorer(QueryScorer):
     @staticmethod
     def tf_weight_log(tf):
         '''Returns sublinear scaling of tf: 1+log(tf)'''
+        assert(tf > 0)
         return 1 + log(tf)
     
     @staticmethod
@@ -132,10 +133,11 @@ class CosineQueryScorer(QueryScorer):
         Scores documents' similarities to query using cosine similarity
         in a vector space model.  Uses tf.idf weighting.
         
-        A hit is scored as
+        An individual term hit is scored as
         
             idf * self.tf_weight(q_tf) * self.tf_weight(d_tf)
-            
+        
+        The overall score for a doc is given by the sum of the term-hit scores
         '''
         
         doc_hit_map = defaultdict(int)

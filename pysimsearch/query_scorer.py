@@ -49,7 +49,7 @@ class QueryScorer(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractmethod
-    def score_docs(self, query_vec, postings_lists):
+    def score_docs(self, query_vec, postings_lists, **extra):
         '''Scores documents' similarities to query
         
         Scans postings_lists to compute similarity scores for docs for the
@@ -116,6 +116,7 @@ class CosineQueryScorer(QueryScorer):
     @staticmethod
     def idf_weight_log(N, df):
         '''Returns idf weight'''
+        assert(df > 0)
         return log(N/df)
     
     def __init__(self, tf_weight_type = 'raw'):
@@ -126,7 +127,7 @@ class CosineQueryScorer(QueryScorer):
         
         self.idf_weight = self.idf_weight_log
         
-    def score_docs(self, query_vec, postings_lists, N, df_map, doc_len_map):
+    def score_docs(self, query_vec, postings_lists, N, df_map, doc_len_map, **extra):
         '''
         Scores documents' similarities to query using cosine similarity
         in a vector space model.  Uses tf.idf weighting.
@@ -139,12 +140,13 @@ class CosineQueryScorer(QueryScorer):
         
         doc_hit_map = defaultdict(int)
         for (term, postings_list) in postings_lists:
-            idf = self.idf_weight(N, df_map[term])
+            idf = self.idf_weight(N, df_map.get(term, 1))
             query_term_wt = self.tf_weight(query_vec[term]) * idf
             for (docid, freq) in postings_list:
                 doc_hit_map[docid] += self.tf_weight(freq) * query_term_wt
         
         for (docid, weight) in doc_hit_map.iteritems():
+            assert(doc_len_map[docid] > 0)
             doc_hit_map[docid] = weight / doc_len_map[docid]
             
         # construct list of tuples sorted by value

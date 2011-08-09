@@ -40,6 +40,7 @@ import io
 import itertools
 import math
 import os
+import pprint
 import sys
 
 from pysimsearch import similarity
@@ -210,8 +211,9 @@ class SimIndexTest(unittest.TestCase):
                               "there world": {'doc1'},
                               "hello world": {'doc1', 'doc2'} })
     
-    # Golden hits data (frequencies are simple match-counts between query terms
-    # and document terms). (Disjunctive: requires any term to be present)
+    # Golden hits data for SimpleCountQueryScorer (frequencies are simple
+    # match-counts between query terms and document terms).
+    #   (Disjunctive: requires any term to be present)
     #
     # We can reuse golden_postings to provide some test input here
     golden_scored_hits = { term: docnames
@@ -220,6 +222,28 @@ class SimIndexTest(unittest.TestCase):
     golden_scored_hits.update({ "hello there": {'doc1': 3, 'doc2': 1, 'doc3': 2},
                                 "there world": {'doc1': 2, 'doc2': 1, 'doc3': 1},
                                 "hello world": {'doc1': 3, 'doc2': 2, 'doc3': 1} })
+
+    def get_golden_hits_cos(self):
+        '''Manually computes cosine scores for test set to create golden results'''
+        d1_len = math.sqrt(2^2 + 1 + 1)
+        d2_len = math.sqrt(1 + 1)
+        d3_len = math.sqrt(1 + 1 + 1)
+        N = 3
+        hello_idf = math.log(N/3)
+        there_idf = math.log(N/2)
+        world_idf = math.log(N/2)
+        bob_idf = math.log(N/1)
+        r = ({ "hello there": {'doc1': hello_idf * 2 / d1_len + there_idf / d1_len,
+                               'doc2': hello_idf / d2_len,
+                               'doc3': hello_idf / d3_len + there_idf / d3_len},
+               "there world": {'doc1': there_idf / d1_len + world_idf / d1_len,
+                               'doc2': world_idf / d2_len,
+                               'doc3': there_idf / d3_len},
+               "hello world": {'doc1': hello_idf * 2 / d1_len + world_idf / d1_len,
+                               'doc2': hello_idf / d2_len + world_idf / d2_len,
+                               'doc3': hello_idf / d3_len} })
+        pprint.pprint(r)
+        return r
     
     def setUp(self):
         self.sim_index = SimpleMemorySimIndex()
@@ -271,7 +295,7 @@ class SimIndexTest(unittest.TestCase):
             self.assertEqual(golden_doc_hits,
                              set(self.sim_index.docnames_with_terms(*terms)))
 
-    def test_query(self):
+    def test_query_simple_scorer(self):
         '''Test query() using known data.
         
         Uses SimpleCountQueryScorer for scoring.
@@ -282,7 +306,19 @@ class SimIndexTest(unittest.TestCase):
             self.assertEqual(golden_doc_hits,
                              dict(self.sim_index.query(query_vec)),
                              msg = "query={}".format(query))
-            
+
+    def test_query_cosine_scorer(self):
+        '''Test query() using known data.
+        
+        Uses CosineQueryScorer for scoring.
+        '''
+        self.sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
+        for (query, golden_doc_hits_cos) in self.get_golden_hits_cos().items():
+            query_vec = doc_reader.term_vec_from_string(query)
+            results = self.sim_index.query(query_vec)
+            for (docname, score) in results:
+                self.assertAlmostEqual(score, golden_doc_hits_cos[docname])
+
     def test_save_load(self):
         '''Test save()/load() functionality'''
         with io.BytesIO() as output:
@@ -290,7 +326,7 @@ class SimIndexTest(unittest.TestCase):
             output.seek(0)
             loaded_sim_index = SimpleMemorySimIndex.load(output)
         self.sim_index = loaded_sim_index
-        self.test_query()  # make sure test_query() still works
+        self.test_query_simple_scorer()  # make sure test_query() still works
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

@@ -145,10 +145,18 @@ class SimIndex(object):
         '''Returns an iterable of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
-
-# FIXME (ugly hack for pickle)
-def _ret_one():
-    return 1
+    @abc.abstractmethod
+    def query(self, query_vec):
+        '''
+        Finds documents similar to query_vec
+        
+        Params:
+            query_vec: term vector representing query document
+        
+        Returns:
+            A iterable of (docname, score) tuples sorted by score
+        '''
+        return
 
 class SimpleMemorySimIndex(SimIndex):
     '''
@@ -165,8 +173,8 @@ class SimpleMemorySimIndex(SimIndex):
         self.N = 0
 
         # additional stats used for scoring
-        self.df_map = defaultdict(_ret_one)
-        self.doc_len_map = defaultdict(_ret_one)
+        self.df_map = defaultdict(int)
+        self.doc_len_map = defaultdict(int)
     
     def index_files(self, named_files):
         '''

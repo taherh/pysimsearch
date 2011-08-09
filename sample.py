@@ -31,8 +31,13 @@ print("Pages containing terms 'university' and 'california'")
 print(list(sim_index.docnames_with_terms('university', 'california')))
 
 # Issue some similarity queries
-print("Similarity search for query 'stanford university'")
+print("Similarity search for query 'stanford university' (simple scorer)")
 sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+print(list(sim_index.query(
+    doc_reader.term_vec_from_string("stanford university"))))
+
+print("Similarity search for query 'stanford university' (tf.idf scorer)")
+sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
 print(list(sim_index.query(
     doc_reader.term_vec_from_string("stanford university"))))
 

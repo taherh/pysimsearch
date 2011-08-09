@@ -259,7 +259,7 @@ class SimIndexTest(unittest.TestCase):
         '''Test docnames_with_terms() using known data
         
         We use sets instead of lists to more easily allow equality
-        comparison with golden data.assertE
+        comparison with golden data.
         '''
 
         # We unpack the golden hit lists, construct a golden set of docnames
@@ -272,7 +272,10 @@ class SimIndexTest(unittest.TestCase):
                              set(self.sim_index.docnames_with_terms(*terms)))
 
     def test_query(self):
-        '''Test query() using known data'''
+        '''Test query() using known data.
+        
+        Uses SimpleCountQueryScorer for scoring.
+        '''
         self.sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
         for (query, golden_doc_hits) in self.golden_scored_hits.items():
             query_vec = doc_reader.term_vec_from_string(query)

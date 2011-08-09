@@ -54,12 +54,14 @@ from __future__ import (division, absolute_import, print_function,
 
 import abc
 from collections import defaultdict
-import cPickle
+import pickle
+import itertools
 import sys
 
 from .exceptions import *
 from . import doc_reader
 from . import query_scorer
+from . import term_vec
 
 class SimIndex(object):
     '''
@@ -68,17 +70,19 @@ class SimIndex(object):
     Defines interface as well as provides default implementation for
     several methods.
     
-    Attributes:
+    Instance Attributes:
         config: dictionary of configuration variables
         
     '''
 
     __metaclass__ = abc.ABCMeta
     
-    config = {
-        'lowercase': True
-    }
-    
+    def __init__(self):
+        self.config = {
+            'lowercase': True
+        }
+        self.query_scorer = None
+
     query_scorer = None
     
     def update_config(self, **config):
@@ -138,27 +142,13 @@ class SimIndex(object):
         return sorted(docs)
     
     def docnames_with_terms(self, *terms):
-        '''Returns a list of docnames containing terms'''
+        '''Returns an iterable of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
-    def query(self, query_vec):
-        '''
-        Finds documents similar to query_vec
-        
-        Params:
-            query_vec: term vector representing query document
-        
-        Returns:
-            A iterable of (docname, score) tuples soreted by score
-        '''
-        
-        postings_lists = [(term, self.postings_list(term))
-            for term in query_vec]
-        
-        hits = self.query_scorer.score_docs(query_vec, postings_lists)
-        return ((self.docid_to_name(docid), score) for (docid, score) in hits)
 
-
+# FIXME (ugly hack for pickle)
+def _ret_one():
+    return 1
 
 class SimpleMemorySimIndex(SimIndex):
     '''
@@ -166,16 +156,17 @@ class SimpleMemorySimIndex(SimIndex):
     (Not meant to scale to large datasets)
     '''
 
-    _next_docid = 0
-    
-    name_to_docid_map = None
-    docid_to_name_map = None
-    term_index = None
-    
     def __init__(self):
+        super(SimpleMemorySimIndex, self).__init__();
+        
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
-        self.term_index = defaultdict(list)        
+        self.term_index = defaultdict(list)
+        self.N = 0
+
+        # additional stats used for scoring
+        self.df_map = defaultdict(_ret_one)
+        self.doc_len_map = defaultdict(_ret_one)
     
     def index_files(self, named_files):
         '''
@@ -183,11 +174,16 @@ class SimpleMemorySimIndex(SimIndex):
         named_files is an iterable of (filename, file) pairs
         '''
         for (name, _file) in named_files:
-            with _file as file:  # create 'with' context for file
-                self.name_to_docid_map[name] = self._next_docid
-                self.docid_to_name_map[self._next_docid] = name
-                self._add_vec(self._next_docid, doc_reader.term_vec(file))
-                self._next_docid += 1
+            with _file as file:
+                docid = self.N
+                self.name_to_docid_map[name] = docid
+                self.docid_to_name_map[docid] = name
+                t_vec = doc_reader.term_vec(file)
+                for term in t_vec:
+                    self.df_map[term] += 1
+                self._add_vec(docid, t_vec)
+                self.doc_len_map[docid] = term_vec.l2_norm(t_vec)
+                self.N += 1
 
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
@@ -209,12 +205,38 @@ class SimpleMemorySimIndex(SimIndex):
         if self.config['lowercase']:
             term = term.lower()
         return self.term_index[term]
+    
+    def query(self, query_vec):
+        '''
+        Finds documents similar to query_vec
+        
+        Params:
+            query_vec: term vector representing query document
+        
+        Returns:
+            A iterable of (docname, score) tuples sorted by score
+        '''
+        
+        postings_lists = [(term, self.postings_list(term))
+            for term in query_vec]
+        
+        hits = self.query_scorer.score_docs(query_vec = query_vec,
+                                            postings_lists = postings_lists,
+                                            N = self.N,
+                                            df_map = self.df_map,
+                                            doc_len_map = self.doc_len_map)
+        
+        return ((self.docid_to_name(docid), score) for (docid, score) in hits)
         
     def save(self, file):
         '''
         Saved index to file
         '''
-        cPickle.dump(self, file)
+        # pickle won't let us save query_scorer
+        qs = self.query_scorer
+        self.query_scorer = None
+        pickle.dump(self, file)
+        self.query_scorer = qs
         
     @staticmethod
     def load(file):
@@ -222,6 +244,6 @@ class SimpleMemorySimIndex(SimIndex):
         Static method that loads index from disk and returns a
         SimpleMemorySimIndex
         '''
-        return cPickle.load(file)
+        return pickle.load(file)
         
     

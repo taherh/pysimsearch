@@ -50,7 +50,7 @@ Sample usage::
 '''
 
 from __future__ import (division, absolute_import, print_function,
-        unicode_literals)
+                        unicode_literals)
 
 import abc
 from collections import defaultdict
@@ -103,13 +103,13 @@ class SimIndex(object):
         '''
         return
 
-    def index_filenames(self, filenames):
+    def index_filenames(self, *filenames):
         '''
         Build a similarity index over files given by filenames
         (Convenience method that wraps index_files())
         '''
         return self.index_files(zip(filenames,
-                                    doc_reader.get_text_files(filenames)))
+                                    doc_reader.get_text_files(*filenames)))
     
     @abc.abstractmethod
     def docid_to_name(self, docid):
@@ -157,6 +157,13 @@ class SimIndex(object):
             A iterable of (docname, score) tuples sorted by score
         '''
         return
+    
+    def query_by_string(self, query_string):
+        '''Finds documents similar to query_string.
+        
+        Convenience method that calls self.query()
+        '''
+        return self.query(doc_reader.term_vec_from_string(query_string))
 
 class SimpleMemorySimIndex(SimIndex):
     '''
@@ -213,7 +220,7 @@ class SimpleMemorySimIndex(SimIndex):
         if self.config['lowercase']:
             term = term.lower()
         return self.term_index[term]
-    
+        
     def query(self, query_vec):
         '''
         Finds documents similar to query_vec

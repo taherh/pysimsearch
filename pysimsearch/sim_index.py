@@ -219,8 +219,7 @@ class SimpleMemorySimIndex(SimIndex):
     @staticmethod
     def load(file):
         '''
-        Static method that loads index from disk and returns a
-        SimpleMemorySimIndex
+        Static method that returns a SimpleMemorySimIndex loaded from file
         '''
         return cPickle.load(file)
         

@@ -152,7 +152,7 @@ def main():
                     "to compare.")  
 
     print('Comparing files {}'.format(str(doc_list)))
-    similarities = pairwise_compare(*doc_list)
+    similarities = pairwise_compare_filenames(*doc_list)
     for (fname_a, fname_b, sim) in similarities:
         print('sim({0},{1})={2}'.format(fname_a, fname_b, sim))
 

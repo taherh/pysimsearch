@@ -28,17 +28,17 @@
 
 
 '''
-SimIndexServer
+SimServer
 =========
 
-Server wrapper for sim_index
+Server wrapper for pysimsearch modules.
 
 '''
 
 from __future__ import (division, absolute_import, print_function,
         unicode_literals)
 
-import collections
+import types
 
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
@@ -51,12 +51,10 @@ server = SimpleJSONRPCServer(('localhost', 9001),
                             logRequests = True,
                             requestHandler = RequestHandler)
 
-SimpleJSONRPCServer.allow_none = True
-
 from . import sim_index, query_scorer
 
 class SimIndexService(object):
-    '''Dispatches RPC requests to a SimpleMemorySimIndex'''
+    '''Provide access to sim_index as an RPC service'''
 
     PREFIX = 'sim_index'
     _SUPPORTED_METHODS = {'index_filenames',
@@ -72,7 +70,6 @@ class SimIndexService(object):
         self._sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
     
     def _dispatch(self, method, params):
-        print(str(params))
         if not method.startswith(self.PREFIX + '.'):
             raise Exception('method "{}" is not supported: bad prefix'.format(method))
         
@@ -81,14 +78,11 @@ class SimIndexService(object):
             raise Exception('method "{}" is not supported'.format(method_name))
             
         func = getattr(self._sim_index, method_name)
-        r = None
-        try:
-            r = func(*params)
-        except Exception as e:
-            print('e={}'.format(str(e)))
-        if isinstance(r, collections.Iterable):
+        r = func(*params)
+        # if we got back a generator, then lets materialize a list so it
+        # can serialize properly
+        if isinstance(r, types.GeneratorType):
             r = list(r)
-        print('returning {}'.format(str(r)))
         return r
 
 server.register_instance(SimIndexService())

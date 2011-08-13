@@ -140,6 +140,7 @@ class CosineQueryScorer(QueryScorer):
         The overall score for a doc is given by the sum of the term-hit scores
         '''
         
+        if N == 0: return ()
         doc_hit_map = defaultdict(int)
         for (term, postings_list) in postings_lists:
             idf = self.idf_weight(N, df_map.get(term, 1))

@@ -75,6 +75,7 @@ if __name__ == "__main__" and __package__ is None:
 # external modules
 import argparse
 import logging
+import traceback
 import types
 
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
@@ -116,14 +117,15 @@ class SimIndexService(object):
                 r = list(r)
             return r
         except Exception as e:
-            logging.error(e)
+            logging.error(traceback.format_exc())
+            raise e
 
 # Restrict to a particular path.
 class RequestHandler(SimpleJSONRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-def start_sim_index_server():
-    server = SimpleJSONRPCServer(('localhost', 9001),
+def start_sim_index_server(port):
+    server = SimpleJSONRPCServer(('localhost', port),
                                  logRequests = True,
                                  requestHandler = RequestHandler)
 
@@ -144,11 +146,13 @@ def main():
     parser.add_argument('command',
                         choices=['sim_index'],
                         help='Specify the pysimsearch service to start')
+    parser.add_argument('-p', '--port', nargs='?', default=9001, type=int,
+                        help='Specify server port')
 
     args = parser.parse_args()
 
     if args.command == 'sim_index':
-        start_sim_index_server()
+        start_sim_index_server(args.port)
     else:
         raise Exception('Unknown command: {}'.format(args.command))
         

@@ -2,14 +2,14 @@ from distutils.core import setup
 setup(
       name = "pysimsearch",
       packages = ["pysimsearch", "pysimsearch.test"],
-      version = "0.23",
+      version = "0.24",
       description = "Similarity-search library",
       author = "Taher Haveliwala",
       author_email = "oss@taherh.org",
       url = "https://github.com/taherh/pysimsearch",
-#      download_url = "https://github.com/downloads/taherh/pysimsearch/pysimsearch-0.23.tar.gz",
+      download_url = "https://github.com/downloads/taherh/pysimsearch/pysimsearch-0.24.tar.gz",
       keywords = ["similarity"],
-      requires = ["httplib2", "lxml"],
+      requires = ["httplib2", "lxml", "jsonrpclib"],
       license = "BSD License",
       classifiers = [
                      "Programming Language :: Python",

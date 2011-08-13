@@ -44,11 +44,11 @@ Sample API usage
     # Create an in-memory index and query it
     print("Creating in-memory index of university homepages")
     sim_index = SimpleMemorySimIndex()
-    sim_index.index_files(
-         doc_reader.get_named_text_files('http://www.stanford.edu/',
-                                         'http://www.berkeley.edu',
-                                         'http://www.ucla.edu',
-                                         'http://www.mit.edu'))
+    sim_index.index_filenames('http://www.stanford.edu/',
+                              'http://www.berkeley.edu',
+                              'http://www.ucla.edu',
+                              'http://www.mit.edu')
+                              
     print("Postings list for 'university':")
     pprint(sim_index.postings_list('university'))
     print("Pages containing terms 'university' and 'california'")

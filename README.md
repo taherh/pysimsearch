@@ -66,7 +66,7 @@ Sample Client/Server Usage
 
 *Server*
 
-    bash$ ./sim_server.py sim_index
+    bash$ ./sim_server.py sim_index -p 9001
     Use Control-C to exit
 
 *Client*

@@ -73,21 +73,37 @@ def measure_similarity(file_a, file_b, sim_func = None):
     
     return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
 
-def pairwise_compare(*filenames):
+def pairwise_compare_files(*named_files):
     '''
-    Does a pairwise comparison of the documents specified by 'filenames'
-    and prints their pairwise similarities
+    Do a pairwise comparison of the 'named_files'and print their
+    pairwise similarities
     '''
-    print('Comparing files {0}'.format(str(filenames)))
+    similarities = []
+    for i in range(0, len(named_files)):
+        for j in range(i+1, len(named_files)):
+            (fname_a, file_a) = named_files[i]
+            (fname_b, file_b) = named_files[j]
+            similarities.append((fname_a,
+                                 fname_b,
+                                 measure_similarity(file_a, file_b)))
+    return similarities
+
+def pairwise_compare_filenames(*filenames):
+    '''
+    Do a pairwise comparison of the documents specified by 'filenames'
+    and return their pairwise similarities
+    '''    
+    similarities = []
     for i in range(0, len(filenames)):
         for j in range(i+1, len(filenames)):
             fname_a = filenames[i]
             fname_b = filenames[j]
             with doc_reader.get_text_file(fname_a) as file_a:
                 with doc_reader.get_text_file(fname_b) as file_b:
-                    print('sim({0},{1})={2}'.
-                          format(fname_a, fname_b,
-                                 measure_similarity(file_a, file_b)))
+                    similarities.append((fname_a,
+                                         fname_b,
+                                         measure_similarity(file_a, file_b)))
+    return similarities
   
 # --- Similarity measures ---
     
@@ -135,7 +151,11 @@ def main():
         raise Error("Sorry, you must specify at least two documents "
                     "to compare.")  
 
-    pairwise_compare(*doc_list)
+    print('Comparing files {}'.format(str(doc_list)))
+    similarities = pairwise_compare(*doc_list)
+    for (fname_a, fname_b, sim) in similarities:
+        print('sim({0},{1})={2}'.format(fname_a, fname_b, sim))
+
 
 if __name__ == '__main__':
     main()

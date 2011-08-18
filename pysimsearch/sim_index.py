@@ -44,7 +44,7 @@ Sample usage::
     print(sim_index.postings_list('university'))
     print(list(sim_index.docnames_with_terms('university', 'california')))
     
-    sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+    sim_index.set_query_scorer('simple_count')
     print(list(sim_index.query(
         doc_reader.term_vec_from_string("stanford university"))))
 '''
@@ -55,13 +55,18 @@ from __future__ import (division, absolute_import, print_function,
 import abc
 from collections import defaultdict
 import cPickle as pickle
+import heapq
+import io
 import itertools
+import operator
 import sys
+import types
 
-from .exceptions import *
 from . import doc_reader
 from . import query_scorer
 from . import term_vec
+from .exceptions import *
+from .query_scorer import QueryScorer
 
 class SimIndex(object):
     '''
@@ -83,20 +88,26 @@ class SimIndex(object):
         }
         self.query_scorer = None
 
-    query_scorer = None
-    
     def update_config(self, **config):
         '''Update any configuration variables'''
         self.config.update(config)
         
     def set_query_scorer(self, query_scorer):
-        '''Set the query_scorer'''
-        self.query_scorer = query_scorer
+        '''Set the query_scorer
+        
+        Params:
+            query_scorer: if string type, we assume it is a scorer name,
+                          else we assume it is itself a scoring object.
+        '''
+        if isinstance(query_scorer, str) or isinstance(query_scorer, unicode):
+            self.query_scorer = QueryScorer.make_scorer(query_scorer)
+        else:
+            self.query_scorer = query_scorer
 
     @abc.abstractmethod
     def index_files(self, named_files):
         '''
-        Build a similarity index over collection given in named_files
+        Adds collection given in named_files to the index.
         named_files is an iterable of (filename, file) pairs.
         
         Takes ownership of (and consumes) named_files
@@ -110,7 +121,20 @@ class SimIndex(object):
         '''
         return self.index_files(zip(filenames,
                                     doc_reader.get_text_files(*filenames)))
-    
+
+    def index_string_buffers(self, named_string_buffers):
+        '''
+        Adds collection of string buffers given in named_string_buffers
+        to the index.
+        
+        Params:
+            named_string_buffers: iterable of (name, string) tuples
+            
+        '''
+        named_files = [(name, io.StringIO(string_buffer))
+            for (name, string_buffer) in named_string_buffers]
+        self.index_files(named_files)
+        
     @abc.abstractmethod
     def docid_to_name(self, docid):
         '''Returns document name for a given docid'''
@@ -182,11 +206,37 @@ class SimpleMemorySimIndex(SimIndex):
         # additional stats used for scoring
         self.df_map = defaultdict(int)
         self.doc_len_map = defaultdict(int)
+        
+        # these are global stats, which is present, are used instead
+        # of the local stats above
+        self.global_df_map = None
+        self.global_N = None
+
+    def set_global_df_map(self, df_map):
+        self.global_df_map = df_map
+        
+    def get_local_df_map(self):
+        return self.df_map
+    
+    def get_df_map(self):
+        return self.global_df_map or self.df_map
+    
+    def set_global_N(self, N):
+        self.global_N = N
+    
+    def get_local_N(self):
+        return self.N
+    
+    def get_N(self):
+        return self.global_N or self.N
+
+    def get_name_to_docid_map(self):
+        return self.name_to_docid_map
     
     def index_files(self, named_files):
         '''
         Build a similarity index over collection given in named_files
-        named_files is an iterable of (filename, file) pairs
+        named_files is a list iterable of (filename, file) pairs
         '''
         for (name, _file) in named_files:
             with _file as file:
@@ -237,8 +287,8 @@ class SimpleMemorySimIndex(SimIndex):
         
         hits = self.query_scorer.score_docs(query_vec = query_vec,
                                             postings_lists = postings_lists,
-                                            N = self.N,
-                                            df_map = self.df_map,
+                                            N = self.get_N(),
+                                            df_map = self.get_df_map(),
                                             doc_len_map = self.doc_len_map)
         
         return ((self.docid_to_name(docid), score) for (docid, score) in hits)
@@ -261,3 +311,184 @@ class SimpleMemorySimIndex(SimIndex):
         return pickle.load(file)
         
     
+class SimIndexCollection(SimIndex):
+    '''
+    Provides a SimIndex view over a sharded collection of SimIndexes
+    
+    Useful with collections of remote SimIndexes to provide a
+    distributed indexing and serving architecture.
+    
+    Assumes document-level sharding:
+    
+      - ``query()`` requests are routed to all shards in collection.
+      - ``index_files()`` requests are routed according to a sharding function
+    
+    Note that if we had used query-sharding, then instead, queries would
+    be routed using a sharding function, and index-requests would be
+    routed to all shards.  The two sharding approaches correspond to either
+    partitioning the postings matrix by columns (doc-sharding),
+    or rows (query-sharding).
+    '''
+    
+    def __init__(self):
+        super(SimIndex, self).__init__()
+        self.shards = []
+        self.shard_func = self.default_shard_func
+        self.name_to_docid_map = {}
+        self.docid_to_name_map = {}
+
+    def clear_shards(self):
+        self.shards = []
+        
+    def add_shards(self, *sim_index_shards):
+        self.shards.extend(sim_index_shards)
+        
+    def default_shard_func(self, shard_key):
+        '''implements the default sharding function'''
+        return hash(shard_key) % len(self.shards)
+        
+    def set_shard_func(self, func):
+        self.shard_func = func
+
+    def index_files(self, named_files):
+        '''
+        Translate to index_string_buffers() call, since file objects
+        can't be serialized for rpcs to backends.  Note: we
+        currently read in all files in memory, and make one call to
+        index_string_buffers() -- this can be memory-intesive
+        if named_files represents a large number of files.
+        
+        TODO: read in files in smaller batches, and then make mutiple
+        calls to index_string_buffers().
+        '''
+        named_string_buffers = [(name, file.read())
+            for (name, file) in named_files]
+        self.index_string_buffers(named_string_buffers)
+        
+        self.update_global_stats()
+        
+    def index_string_buffers(self, named_string_buffers):
+        '''
+        Routes index_string_buffers() call to appropriate shard.
+        '''
+        # minimize rpcs by collecting (name, buffer) tuples for
+        # different shards up-front
+        sharded_input_map = defaultdict(list)
+        for (name, buffer) in named_string_buffers:
+            sharded_input_map[self.shard_func(name)].append((name, buffer))
+
+        # issue an indexing rpc to each sharded backend that has some input
+        for shard_id in sharded_input_map:
+            self.shards[shard_id].index_string_buffers(
+                sharded_input_map[shard_id]
+            )
+            
+        self.update_global_stats()
+        
+    def index_urls(self, urls):
+        '''
+        We expose this as a separate api, so that backends can fetch
+        and index urls themselves, rather than fetching centrally
+        and sending across full documents to backends.
+        
+        In contrast, index_files()/index_filenames() will read/collect data
+        centrally, then dispatch fully materialized input data to backends.
+        '''
+        # minimize rpcs by collecting (name, buffer) tuples for
+        # different shards up-front
+        sharded_input_map = defaultdict([])
+        for url in urls:
+            sharded_input_map[self.shard_func(url)].append(url)
+
+        # issue an indexing call to each sharded backend that has some input
+        for shard_id in sharded_input_map:
+            self.shards[shard_id].index_filenames(
+                *sharded_input_map[shard_id]
+            )
+            
+        self.update_global_stats()
+
+    @staticmethod
+    def make_global_docid(shard_id, docid):
+        return "{}-{}".format(shard_id, docid)
+            
+    
+    def docid_to_name(self, docid):
+        '''Translates global docid to name'''
+        return self.docid_to_name_map[docid]
+    
+    def name_to_docid(self, name):
+        '''Translates name to global docid'''
+        return self.name_to_docid_map[name]
+    
+    def postings_list(self, term):
+        '''Returns aggregated postings list in terms of global docids'''
+
+        postings_lists = []
+        for shard_id in range(len(self.shards)):
+            postings_lists.extend(
+                 [(self.make_global_docid(shard_id, docid), freq) for
+                  (docid, freq) in self.shards[shard_id].postings_list(term)]
+                )
+        
+        return postings_lists
+    
+    def set_query_scorer(self, query_scorer):
+        '''Passes request to all shards.
+        
+        Note: if any backends are remote, query_scorer needs to be a
+        scorer name, rather than a scorer object (which we currently
+        can't serialize for an rpc)
+        '''
+        for shard in self.shards:
+            shard.set_query_scorer(query_scorer)
+            
+    def query(self, query_vec):
+        '''
+        Issues query to collection and merges results
+        
+        TODO: use a merge alg. (heapq.merge doesn't have a key= arg yet)
+        '''
+        results = []
+        for shard in self.shards:
+            results.extend(shard.query(query_vec))
+        results.sort(key=operator.itemgetter(1), reverse=True)
+        return results
+
+    def update_global_stats(self):
+        '''
+        Fetches local stats from all shards, aggregates them, and
+        rebroadcasts global stats back to shards.  Currently uses
+        "brute-force"; incremental updating (in either direction)
+        is not supported.
+        '''
+        
+        def merge_df_map(target, source):
+            '''
+            Helper function to merge df_maps.
+            Target must be a defaultdict(int)
+            '''
+            for (term, df) in source.items():
+                target[term] += df
+
+        # Collect global stats
+        global_N = 0
+        global_df_map = defaultdict(int)
+        name_to_docid_maps = {}
+        for shard_id in range(len(self.shards)):
+            shard = self.shards[shard_id]
+            global_N += shard.get_local_N()
+            merge_df_map(global_df_map, shard.get_local_df_map())
+            name_to_docid_maps[shard_id] = shard.get_name_to_docid_map()
+            
+        # Broadcast global stats
+        for shard in self.shards:
+            shard.set_global_N(global_N)
+            shard.set_global_df_map(global_df_map)
+
+        # Update our name <-> global_docid mapping
+        for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():
+            for (name, docid) in name_to_docid_map.iteritems():
+                gdocid = self.make_global_docid(shard_id, docid)
+                self.name_to_docid_map[name] = gdocid
+                self.docid_to_name_map[gdocid] = name

@@ -47,6 +47,7 @@ from pysimsearch import similarity
 from pysimsearch import freq_tools
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMemorySimIndex
+from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch import query_scorer
 
 
@@ -184,8 +185,17 @@ class TermVecTest(unittest.TestCase):
         B = {'a':1,        'c':2, 'd':3}
         
         self.assertEqual(similarity.mag_intersect(A, B), 3)
+
+class SimIndexTest(object):
+    '''
+    Provides common tests for different implementations of the SimIndex
+    interface.
     
-class SimIndexTest(unittest.TestCase):
+    To test a concrete implementation of SimIndex, must sublcass SimIndexTest,
+    and also inherit unittest.TestCase.  We intentionally do not inherit
+    unittest.TestCase for SimIndexTest, as SimIndex is only an abstract
+    class that cannot be instantiated.
+    '''
     longMessage = True
 
     sim_index = None
@@ -245,16 +255,6 @@ class SimIndexTest(unittest.TestCase):
         pprint.pprint(r)
         return r
     
-    def setUp(self):
-        self.sim_index = SimpleMemorySimIndex()
-
-        named_files = ((docname, io.StringIO(doc))
-                            for (docname, doc) in self.docs)
-        self.sim_index.index_files(named_files)
-    
-    def tearDown(self):
-        pass
-        
     def test_docname_docid_translation(self):
         '''Test docname_to_docid()/docid_to_docname() using known data'''
 
@@ -296,29 +296,48 @@ class SimIndexTest(unittest.TestCase):
                              set(self.sim_index.docnames_with_terms(*terms)))
 
     def test_query_simple_scorer(self):
-        '''Test query() using known data.
+        '''Test query() with simple_scorer using known data.
         
         Uses SimpleCountQueryScorer for scoring.
         '''
         self.sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
         for (query, golden_doc_hits) in self.golden_scored_hits.items():
-            query_vec = doc_reader.term_vec_from_string(query)
             self.assertEqual(golden_doc_hits,
-                             dict(self.sim_index.query(query_vec)),
+                             dict(self.sim_index.query_by_string(query)),
                              msg = "query={}".format(query))
 
-    def test_query_cosine_scorer(self):
-        '''Test query() using known data.
+    def test_query_tfidf_scorer(self):
+        '''Test query() with tfidf using known data.
         
-        Uses CosineQueryScorer for scoring.
+        Uses TFIDFQueryScorer for scoring.
         '''
-        self.sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
+        self.sim_index.set_query_scorer(query_scorer.TFIDFQueryScorer())
         for (query, golden_doc_hits_cos) in self.get_golden_hits_cos().items():
-            query_vec = doc_reader.term_vec_from_string(query)
-            results = self.sim_index.query(query_vec)
+            results = self.sim_index.query_by_string(query)
             for (docname, score) in results:
-                self.assertAlmostEqual(score, golden_doc_hits_cos[docname])
+                self.assertAlmostEqual(score,
+                                       golden_doc_hits_cos[docname],
+                                       msg="results={}".format(str(results)))
 
+
+class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
+    '''
+    All tests hitting the SimIndex interface are in the parent class, SimIndexTest
+    
+    Tests for api's not in parent class are tested separately here.  This is
+    so we can reuse test code across all implementations of SimIndex.
+    
+    '''
+    def setUp(self):
+        self.sim_index = SimpleMemorySimIndex()
+
+        named_files = ((docname, io.StringIO(doc))
+                            for (docname, doc) in self.docs)
+        self.sim_index.index_files(named_files)
+    
+    def tearDown(self):
+        pass
+        
     def test_save_load(self):
         '''Test save()/load() functionality'''
         with io.BytesIO() as output:
@@ -328,6 +347,20 @@ class SimIndexTest(unittest.TestCase):
         self.sim_index = loaded_sim_index
         self.test_query_simple_scorer()  # make sure test_query() still works
 
+
+class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
+    def setUp(self):
+        self.sim_index = SimIndexCollection()
+        for i in range(1):
+            self.sim_index.add_shards(SimpleMemorySimIndex())
+            
+        named_files = ((docname, io.StringIO(doc))
+                            for (docname, doc) in self.docs)
+        self.sim_index.index_files(named_files)
+    
+    def tearDown(self):
+        pass
+        
+
 if __name__ == "__main__":
-    # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

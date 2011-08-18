@@ -95,7 +95,12 @@ class SimIndexService(object):
                           'docids_with_terms',
                           'docnames_with_terms',
                           'query',
-                          'query_by_string'}
+                          'query_by_string',
+                          'set_global_N',
+                          'get_local_N',
+                          'set_global_df_map',
+                          'get_global_df_map',
+                          'get_name_to_docid_map'}
     def __init__(self):
         self._sim_index = sim_index.SimpleMemorySimIndex()
         self._sim_index.set_query_scorer(query_scorer.CosineQueryScorer())

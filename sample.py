@@ -4,6 +4,7 @@ from __future__ import(division, absolute_import, print_function,
 from pprint import pprint
 
 from pysimsearch.sim_index import SimpleMemorySimIndex
+from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch import doc_reader
 from pysimsearch import similarity
 from pysimsearch import query_scorer
@@ -62,3 +63,17 @@ with open("myindex.idx", "r") as index_file:
 print()
 print("Pages containing terms 'university' and 'california' in loaded index")
 pprint(list(sim_index2.docnames_with_terms('university', 'california')))
+
+# SimIndexCollection
+print()
+index1 = SimpleMemorySimIndex()
+index2 = SimpleMemorySimIndex()
+index_coll = SimIndexCollection()
+index_coll.add_shards(index1, index2)
+index_coll.set_query_scorer(query_scorer.TFIDFQueryScorer())
+index_coll.index_string_buffers((('d1', 'hello there'),
+                                 ('d2', 'what are you'),
+                                 ('d3', 'ok thats enough'),
+                                 ('d4', 'wait what hello')))
+
+pprint(index_coll.query_by_string('hello ok enough'))

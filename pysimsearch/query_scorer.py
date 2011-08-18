@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2010, Taher Haveliwala <oss@taherh.org>
+# Copyright (c) 2011, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,11 +42,19 @@ class QueryScorer(object):
     '''
     Interface for query scorers which score similarity search results
     
-    QueryScorers are passed to the SimIndex.query() method to handle
+    QueryScorers are used by the SimIndex.query() method to handle the
     scoring of similarity search results.    
     '''
     
     __metaclass__ = abc.ABCMeta
+    
+    # name->scorer mapping
+    _scorers = { }
+    
+    @staticmethod
+    def make_scorer(scorer_type):
+        '''Returns a new scorer object'''
+        return QueryScorer._scorers[scorer_type]()
     
     @abc.abstractmethod
     def score_docs(self, query_vec, postings_lists, **extra):
@@ -69,7 +77,7 @@ class SimpleCountQueryScorer(QueryScorer):
     '''
     QueryScorer that uses simple term frequencies for scoring.
     '''
-    
+        
     def score_docs(self, query_vec, postings_lists, **extra):
         '''
         Scores query-document similarity using number of occurrences
@@ -88,10 +96,12 @@ class SimpleCountQueryScorer(QueryScorer):
                       key=operator.itemgetter(1),
                       reverse=True)
 
+# add to scorers map
+QueryScorer._scorers['simple_count'] = SimpleCountQueryScorer
 
-class CosineQueryScorer(QueryScorer):
+class TFIDFQueryScorer(QueryScorer):
     '''
-    QueryScorer that uses cosine similarity for scoring.
+    QueryScorer that uses TFIDF weighting with the cosine similarity measure.
     
     This implementation is actually an approximation to the true
     cosine, because of the way we normalize by document length.
@@ -157,4 +167,6 @@ class CosineQueryScorer(QueryScorer):
                       key=operator.itemgetter(1),
                       reverse=True)
 
-    
+# add to scorers map
+QueryScorer._scorers['tfidf'] = TFIDFQueryScorer
+

@@ -59,8 +59,11 @@ import heapq
 import io
 import itertools
 import operator
+from pprint import pprint
 import sys
 import types
+
+import jsonrpclib as rpclib
 
 from . import doc_reader
 from . import query_scorer
@@ -131,8 +134,11 @@ class SimIndex(object):
             named_string_buffers: iterable of (name, string) tuples
             
         '''
-        named_files = [(name, io.StringIO(string_buffer))
-            for (name, string_buffer) in named_string_buffers]
+        named_files = []
+        for (name, string_buffer) in named_string_buffers:
+            if isinstance(string_buffer, str):
+                string_buffer = unicode(string_buffer)
+            named_files.append((name, io.StringIO(string_buffer)))
         self.index_files(named_files)
         
     @abc.abstractmethod
@@ -187,6 +193,8 @@ class SimIndex(object):
         
         Convenience method that calls self.query()
         '''
+        if isinstance(query_string, str):
+            query_string = unicode(query_string)
         return self.query(doc_reader.term_vec_from_string(query_string))
 
 class SimpleMemorySimIndex(SimIndex):
@@ -213,10 +221,10 @@ class SimpleMemorySimIndex(SimIndex):
         self.global_N = None
 
     def set_global_df_map(self, df_map):
-        self.global_df_map = df_map
+        self.global_df_map = defaultdict(int, df_map)
         
     def get_local_df_map(self):
-        return self.df_map
+        return dict(self.df_map)
     
     def get_df_map(self):
         return self.global_df_map or self.df_map
@@ -310,6 +318,22 @@ class SimpleMemorySimIndex(SimIndex):
         '''
         return pickle.load(file)
         
+    
+class RemoteSimIndex(object):
+    '''Proxy to a remote SimIndex'''
+    
+    def __init__(self, server_url):
+        # can't import at top level because of circular dependency
+        from . import sim_server
+        self.PREFIX = sim_server.SimIndexService.PREFIX
+        self.EXPORTED_METHODS = sim_server.SimIndexService.EXPORTED_METHODS
+        self._server = rpclib.Server(server_url)
+        
+    def __getattr__(self, name):
+        if name in self.EXPORTED_METHODS:
+            func = getattr(self._server,
+                           self.PREFIX + '.' + name)
+            return func
     
 class SimIndexCollection(SimIndex):
     '''
@@ -484,7 +508,7 @@ class SimIndexCollection(SimIndex):
         # Broadcast global stats
         for shard in self.shards:
             shard.set_global_N(global_N)
-            shard.set_global_df_map(global_df_map)
+            shard.set_global_df_map(dict(global_df_map))
 
         # Update our name <-> global_docid mapping
         for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():

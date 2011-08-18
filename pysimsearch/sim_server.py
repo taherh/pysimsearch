@@ -78,8 +78,11 @@ import logging
 import traceback
 import types
 
-from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer
-from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer as SimpleRPCServer
+from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler as SimpleRPCRequestHandler
+
+#from SimpleXMLRPCServer import SimpleXMLRPCServer as SimpleRPCServer
+#from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler as SimpleRPCRequestHandler
 
 # our modules
 from . import sim_index, query_scorer
@@ -88,35 +91,41 @@ class SimIndexService(object):
     '''Provide access to sim_index as an RPC service'''
 
     PREFIX = 'sim_index'
-    _SUPPORTED_METHODS = {'index_filenames',
-                          'docid_to_name',
-                          'name_to_docid',
-                          'postings_list',
-                          'docids_with_terms',
-                          'docnames_with_terms',
-                          'query',
-                          'query_by_string',
-                          'set_global_N',
-                          'get_local_N',
-                          'set_global_df_map',
-                          'get_global_df_map',
-                          'get_name_to_docid_map'}
+    EXPORTED_METHODS = {'index_filenames',
+                        'index_string_buffers',
+                        'docid_to_name',
+                        'name_to_docid',
+                        'postings_list',
+                        'docids_with_terms',
+                        'docnames_with_terms',
+                        'set_query_scorer',
+                        'query',
+                        'query_by_string',
+                        'set_global_N',
+                        'get_local_N',
+                        'set_global_df_map',
+                        'get_global_df_map',
+                        'get_local_df_map',
+                        'get_name_to_docid_map'}
     def __init__(self):
         self._sim_index = sim_index.SimpleMemorySimIndex()
-        self._sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
+        self._sim_index.set_query_scorer(query_scorer.TFIDFQueryScorer())
     
     def _dispatch(self, method, params):
         if not method.startswith(self.PREFIX + '.'):
             raise Exception('method "{}" is not supported: bad prefix'.format(method))
-        
+
         method_name = method.partition('.')[2]
-        if method_name not in self._SUPPORTED_METHODS:
+
+        logging.info('_dispatch: {}'.format(method))
+        
+        if method_name not in self.EXPORTED_METHODS:
             raise Exception('method "{}" is not supported'.format(method_name))
             
         func = getattr(self._sim_index, method_name)
         try:
             r = func(*params)
-            # if we got back a generator, then lets materialize a list so it
+            # if we got back a generator, then let's materialize a list so it
             # can serialize properly
             if isinstance(r, types.GeneratorType):
                 r = list(r)
@@ -126,11 +135,11 @@ class SimIndexService(object):
             raise e
 
 # Restrict to a particular path.
-class RequestHandler(SimpleJSONRPCRequestHandler):
+class RequestHandler(SimpleRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
 def start_sim_index_server(port):
-    server = SimpleJSONRPCServer(('localhost', port),
+    server = SimpleRPCServer(('localhost', port),
                                  logRequests = True,
                                  requestHandler = RequestHandler)
 

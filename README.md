@@ -61,8 +61,8 @@ Sample API usage
 
 
 
-Sample Client/Server Usage
---------------------------
+Sample Client/Server Usage via JSON api
+---------------------------------------
 
 *Server*
 
@@ -84,3 +84,33 @@ Sample Client/Server Usage
      [u'http://www.ucla.edu', 0.04485065887313478],
      [u'http://www.berkeley.edu', 0.020464326883958977]]
 
+
+Sample SimIndexCollection Usage
+-------------------------------
+
+*Server*
+
+    bash$ ./sim_server.py sim_index -p 9001 &
+    bash$ ./sim_server.py sim_index -p 9002 &
+
+*SimIndexCollection*
+
+    >>> from pprint import pprint
+    >>> from pysimsearch.sim_index import SimIndexCollection
+    >>> from pysimsearch.sim_index import RemoteSimIndex
+    >>> from pysimsearch import query_scorer
+    >>> servers = [
+                    RemoteSimIndex('http://localhost:9001/RPC2'),
+                    RemoteSimIndex('http://localhost:9002/RPC2')
+                  ]
+    >>> index_coll = SimIndexCollection()
+    >>> index_coll.add_shards(*servers)
+    >>> index_coll.set_query_scorer('tfidf')
+    >>> index_coll.index_string_buffers((('d1', 'hello there'),
+                                         ('d2', 'what are you'),
+                                         ('d3', 'ok thats enough'),
+                                         ('d4', 'wait what hello')))
+    >>> pprint(index_coll.query_by_string('hello ok enough'))
+    [[u'd3', 1.6007548451372582],
+     [u'd1', 0.49012907173427356],
+     [u'd4', 0.40018871128431455]]

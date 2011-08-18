@@ -412,11 +412,11 @@ class SimIndexCollection(SimIndex):
     def index_urls(self, *urls):
         '''
         We expose this as a separate api, so that backends can fetch
-        and index urls themselves, rather than fetching centrally
-        and sending across full documents to backends.
+        and index urls themselves.
         
         In contrast, index_files()/index_filenames() will read/collect data
-        centrally, then dispatch fully materialized input data to backends.
+        centrally, then dispatch fully materialized input data to backends
+        for indexing.
         '''
         # minimize rpcs by collecting (name, buffer) tuples for
         # different shards up-front

@@ -409,7 +409,7 @@ class SimIndexCollection(SimIndex):
             
         self.update_global_stats()
         
-    def index_urls(self, urls):
+    def index_urls(self, *urls):
         '''
         We expose this as a separate api, so that backends can fetch
         and index urls themselves, rather than fetching centrally

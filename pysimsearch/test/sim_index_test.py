@@ -27,7 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 '''
-Unittests for pysimsearch package
+Unittests for pysimsearch.sim_index package
 
 To run unittests, run 'nosetests' from the test directory
 '''
@@ -37,154 +37,13 @@ from __future__ import(division, absolute_import, print_function,
 import unittest
 
 import io
-import itertools
 import math
-import os
 import pprint
-import sys
 
-from pysimsearch import similarity
-from pysimsearch import freq_tools
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMemorySimIndex
 from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch import query_scorer
-
-
-class SimilarityTest(unittest.TestCase):
-    longMessage = True
-    testdata_dir = None  # Will be set in setUp()
-
-    def setUp(self):
-        # set testdata_dir
-        rel_file_path = os.path.dirname(__file__)
-        self.testdata_dir = os.path.join(os.getcwd(), rel_file_path, 'data/')
-
-    def tearDown(self):
-        pass
-
-    def test_measure_similarity(self):
-        '''
-        measure_similarity() should give known results for known inputs
-        known input files are listed in 'test/data/test_filenames'
-        known results are listed in 'test/data/expected_results' with the format
-            filename1 filename2 sim
-        '''
-        # read test filenames
-        with open(self.testdata_dir + 'test_filenames') as input_filenames_file:
-            input_filenames = [fname.rstrip() for fname in 
-                               input_filenames_file.readlines()]
-        
-        input_filenames.sort()
-                
-        # read expected results
-        expected_sims = dict()
-        with open(self.testdata_dir + 'expected_results') as \
-                expected_results_file:
-            for line in expected_results_file:
-                (fname_a, fname_b, expected_sim) = line.split()
-                self.assertTrue(fname_a < fname_b,
-                             'expected_results: require fname_a < fname_b: ' + 
-                             line)
-                expected_sims[(fname_a,fname_b)] = float(expected_sim)
-                
-        # check computed similarities against expected similarities
-        for (fname_a, fname_b) in expected_sims:
-            print('Comparing {0},{1}'.format(fname_a, fname_b))
-            with open(self.testdata_dir + fname_a) as file_a:
-                with open(self.testdata_dir + fname_b) as file_b:
-                    sim = similarity.measure_similarity(file_a, file_b)
-                    self.assertAlmostEqual(
-                            sim, expected_sims[(fname_a, fname_b)], 
-                            places = 3,
-                            msg = 'Mismatch for pair {0}: got {1}, expected {2}'.
-                            format((fname_a, fname_b), sim, 
-                                   expected_sims[(fname_a, fname_b)]))
-
-    def test_cosine_sim(self):
-        '''cosine_sim() test using known inputs'''
-        u = {'a':1, 'b':2, 'c':5}
-        v = {'a':1,        'c':2, 'd':3}
-    
-        self.assertEqual(similarity.cosine_sim(u, v), 11 / (math.sqrt(30) * math.sqrt(14)))
-        
-    def test_jaccard_sim(self):
-        '''jaccard_sim() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-    
-        self.assertEqual(similarity.jaccard_sim(A, B), 3 / 14)
-    
-class FreqToolsTest(unittest.TestCase):
-    longMessage = True
-
-    def test_read_df(self):
-        '''read_df() test'''
-        df_dict = {'a':5, 'b':3, 'c':1}
-        df_file_str =\
-        '''
-        a    5
-        b    3
-        c    1
-        '''
-        df_file = io.StringIO(df_file_str)
-        self.assertEqual(freq_tools.read_df(df_file), df_dict)
-        
-    def test_write_df(self):
-        '''write_df() test'''
-        df_dict = {'a':5, 'b':3, 'c':1}
-        df_file = io.StringIO()
-        freq_tools.write_df(df_dict, df_file)
-        
-        df_file.seek(0)
-        self.assertEqual(freq_tools.read_df(df_file), df_dict)
-            
-    def test_compute_df(self):
-        doc1 = 'a b b     c d e e e e f'
-        doc2 = '  b           e         g g g h i'
-        doc3 = '  b b b b c d                 h  '
-        
-        df_dict = {'a':1, 'b':3, 'c':2, 'd':2, 'e':2, 'f':1, 'g':1, 'h':2,
-                   'i':1}
-        
-        files = (io.StringIO(doc1), io.StringIO(doc2), io.StringIO(doc3))
-        self.assertEqual(freq_tools.compute_df(files), df_dict)
-    
-class TermVecTest(unittest.TestCase):
-    longMessage = True
-
-    def test_dot_product(self):
-        '''dot_product() test using known inputs'''
-        v1 = {'a':1, 'b':2, 'c':0.5}
-        v2 = {'a':2,        'c':2, 'd':100}
-        
-        self.assertEqual(similarity.dot_product(v1, v2), 3)
-
-    def test_l2_norm(self):
-        '''l2_norm() test using known inputs'''
-        v = {'a':1, 'b':2, 'c':5}
-        
-        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
-
-    def test_magnitude(self):
-        '''magnitude() test using known inputs'''
-        v = {'a':1, 'b':2, 'c':5}
-        
-        self.assertEqual(similarity.l2_norm(v), math.sqrt(1 + 2**2 + 5**2))
-        
-    def test_mag_union(self):
-        '''mag_union() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-        
-        self.assertEqual(similarity.mag_union(A, B), 14)
-    
-    def test_mag_intersect(self):
-        '''mag_intersect() test using known inputs'''
-        A = {'a':1, 'b':2, 'c':5}
-        B = {'a':1,        'c':2, 'd':3}
-        
-        self.assertEqual(similarity.mag_intersect(A, B), 3)
 
 class SimIndexTest(object):
     '''

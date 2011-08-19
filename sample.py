@@ -39,13 +39,13 @@ pprint(list(sim_index.docnames_with_terms('university', 'california')))
 # Issue some similarity queries
 print()
 print("Similarity search for query 'stanford university' (simple scorer)")
-sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+sim_index.set_query_scorer('simple_count')
 pprint(list(sim_index.query(
     doc_reader.term_vec_from_string("stanford university"))))
 
 print()
 print("Similarity search for query 'stanford university' (tf.idf scorer)")
-sim_index.set_query_scorer(query_scorer.CosineQueryScorer())
+sim_index.set_query_scorer('tfidf')
 pprint(list(sim_index.query(
     doc_reader.term_vec_from_string("stanford university"))))
 
@@ -66,11 +66,12 @@ pprint(list(sim_index2.docnames_with_terms('university', 'california')))
 
 # SimIndexCollection
 print()
+print("SimIndexCollection")
 index1 = SimpleMemorySimIndex()
 index2 = SimpleMemorySimIndex()
 index_coll = SimIndexCollection()
 index_coll.add_shards(index1, index2)
-index_coll.set_query_scorer(query_scorer.TFIDFQueryScorer())
+index_coll.set_query_scorer('tfidf')
 index_coll.index_string_buffers((('d1', 'hello there'),
                                  ('d2', 'what are you'),
                                  ('d3', 'ok thats enough'),

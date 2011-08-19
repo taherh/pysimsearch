@@ -32,7 +32,6 @@ Sample API usage
     from pysimsearch.sim_index import SimpleMemorySimIndex
     from pysimsearch import doc_reader
     from pysimsearch import similarity
-    from pysimsearch import query_scorer
         
     # Compare web-page similarities
     print("Printing pairwise similarities of university homepages")
@@ -56,7 +55,7 @@ Sample API usage
        
     # Issue some similarity queries
     print("Similarity search for query 'stanford university'")
-    sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+    sim_index.set_query_scorer('simple_count')
     pprint(list(sim_index.query_by_string('stanford university')))
 
 
@@ -98,7 +97,6 @@ Sample SimIndexCollection Usage
     >>> from pprint import pprint
     >>> from pysimsearch.sim_index import SimIndexCollection
     >>> from pysimsearch.sim_index import RemoteSimIndex
-    >>> from pysimsearch import query_scorer
     >>> servers = [
                     RemoteSimIndex('http://localhost:9001/RPC2'),
                     RemoteSimIndex('http://localhost:9002/RPC2')

@@ -102,7 +102,7 @@ class SimIndex(object):
             query_scorer: if string type, we assume it is a scorer name,
                           else we assume it is itself a scoring object.
         '''
-        if isinstance(query_scorer, str) or isinstance(query_scorer, unicode):
+        if isinstance(query_scorer, basestring):
             self.query_scorer = QueryScorer.make_scorer(query_scorer)
         else:
             self.query_scorer = query_scorer

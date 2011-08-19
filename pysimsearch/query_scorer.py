@@ -56,6 +56,10 @@ class QueryScorer(object):
         '''Returns a new scorer object'''
         return QueryScorer._scorers[scorer_type]()
     
+    @staticmethod
+    def register_scorers(scorer_map):
+        QueryScorer._scorers.update(scorer_map)
+        
     @abc.abstractmethod
     def score_docs(self, query_vec, postings_lists, **extra):
         '''Scores documents' similarities to query
@@ -77,7 +81,7 @@ class SimpleCountQueryScorer(QueryScorer):
     '''
     QueryScorer that uses simple term frequencies for scoring.
     '''
-        
+
     def score_docs(self, query_vec, postings_lists, **extra):
         '''
         Scores query-document similarity using number of occurrences
@@ -95,9 +99,6 @@ class SimpleCountQueryScorer(QueryScorer):
         return sorted(doc_hit_map.iteritems(),
                       key=operator.itemgetter(1),
                       reverse=True)
-
-# add to scorers map
-QueryScorer._scorers['simple_count'] = SimpleCountQueryScorer
 
 class TFIDFQueryScorer(QueryScorer):
     '''
@@ -167,6 +168,9 @@ class TFIDFQueryScorer(QueryScorer):
                       key=operator.itemgetter(1),
                       reverse=True)
 
-# add to scorers map
-QueryScorer._scorers['tfidf'] = TFIDFQueryScorer
+# Register scorers by name
+QueryScorer.register_scorers({
+    'simple_count': SimpleCountQueryScorer,
+    'tfidf': TFIDFQueryScorer
+})
 

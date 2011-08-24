@@ -1,1 +1,162 @@
-pysimsearch GitHub Page
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>pysimsearch 1.2.5 documentation &mdash; pysimsearch v0.25 documentation</title>
+    <link rel="stylesheet" href="static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.25',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.25 documentation" href="#" />
+    <link rel="next" title="The sim_index Module" href="sim_index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sim_index.html" title="The sim_index Module"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="pysimsearch-1-2-5-documentation">
+<h1>pysimsearch 1.2.5 documentation<a class="headerlink" href="#pysimsearch-1-2-5-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="quickstart">
+<h2>Quickstart:<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p><em>Quick sample:</em></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">sim_index</span><span class="p">,</span> <span class="n">doc_reader</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">sim_index</span><span class="o">.</span><span class="n">SimpleMemorySimIndex</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+<span class="go">                          &#39;http://www.berkeley.edu/&#39;,</span>
+<span class="go">                          &#39;http://www.ucla.edu&#39;,</span>
+<span class="go">                          &#39;http://www.mit.edu&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">postings_list</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
+<span class="go">[(0, 3), (1, 1), (2, 1)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
+<span class="go">[&#39;http://www.stanford.edu/&#39;, &#39;http://www.ucla.edu&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+<span class="go">[(&#39;http://www.stanford.edu/&#39;, 0.5827172819606118),</span>
+<span class="go"> (&#39;http://www.ucla.edu&#39;, 0.05801461340864149),</span>
+<span class="go"> (&#39;http://www.berkeley.edu/&#39;, 0.025725104682131295)]</span>
+</pre></div>
+</div>
+<p>View a larger <a class="reference internal" href="sample.html"><em>Example</em></a></p>
+</div>
+<div class="section" id="api">
+<h2>API:<a class="headerlink" href="#api" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="sim_index.html">The <tt class="docutils literal"><span class="pre">sim_index</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="similarity.html">The <tt class="docutils literal"><span class="pre">similarity</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="doc_reader.html">The <tt class="docutils literal"><span class="pre">doc_reader</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="freq_tools.html">The <tt class="docutils literal"><span class="pre">freq_tools</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sim_server.html">The <tt class="docutils literal"><span class="pre">sim_server</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="query_scorer.html">The <tt class="docutils literal"><span class="pre">query_scorer</span></tt> Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="term_vec.html">The <tt class="docutils literal"><span class="pre">term_vec</span></tt> Module</a></li>
+</ul>
+</div>
+<span class="target" id="module-pysimsearch"></span></div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pysimsearch 1.2.5 documentation</a><ul>
+<li><a class="reference internal" href="#quickstart">Quickstart:</a></li>
+<li><a class="reference internal" href="#api">API:</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sim_index.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">sim_index</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sim_index.html" title="The sim_index Module"
+             >next</a> |</li>
+        <li><a href="#">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

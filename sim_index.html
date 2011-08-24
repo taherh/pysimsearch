@@ -1,0 +1,451 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The sim_index Module &mdash; pysimsearch v0.25 documentation</title>
+    <link rel="stylesheet" href="static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.25',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
+    <link rel="next" title="The similarity Module" href="similarity.html" />
+    <link rel="prev" title="pysimsearch 1.2.5 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity.html" title="The similarity Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pysimsearch 1.2.5 documentation"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.sim_index">
+<span id="the-sim-index-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">sim_index</span></tt> Module<a class="headerlink" href="#module-pysimsearch.sim_index" title="Permalink to this headline">¶</a></h1>
+<p>Similarity index module.</p>
+<p>Sample usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">SimpleMemorySimIndex</span>
+<span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">doc_reader</span>
+
+<span class="n">sim_index</span> <span class="o">=</span> <span class="n">SimpleMemorySimIndex</span><span class="p">()</span>
+<span class="n">sim_index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">postings_list</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
+
+<span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;simple_count&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="pysimsearch.sim_index.RemoteSimIndex">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">RemoteSimIndex</tt><big>(</big><em>server_url</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.RemoteSimIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Proxy to a remote SimIndex</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="pysimsearch.sim_index.SimIndex">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimIndex</tt><a class="headerlink" href="#pysimsearch.sim_index.SimIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for similarity indexes</p>
+<p>Defines interface as well as provides default implementation for
+several methods.</p>
+<dl class="docutils">
+<dt>Instance Attributes:</dt>
+<dd>config: dictionary of configuration variables</dd>
+</dl>
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.docid_to_name">
+<tt class="descname">docid_to_name</tt><big>(</big><em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.docid_to_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns document name for a given docid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.docids_with_terms">
+<tt class="descname">docids_with_terms</tt><big>(</big><em>terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.docids_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of docids of docs containing terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.docnames_with_terms">
+<tt class="descname">docnames_with_terms</tt><big>(</big><em>*terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.docnames_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of docnames containing terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.index_filenames">
+<tt class="descname">index_filenames</tt><big>(</big><em>*filenames</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_filenames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a similarity index over files given by filenames
+(Convenience method that wraps index_files())</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.index_files">
+<tt class="descname">index_files</tt><big>(</big><em>named_files</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds collection given in named_files to the index.
+named_files is an iterable of (filename, file) pairs.</p>
+<p>Takes ownership of (and consumes) named_files</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.index_string_buffers">
+<tt class="descname">index_string_buffers</tt><big>(</big><em>named_string_buffers</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_string_buffers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds collection of string buffers given in named_string_buffers
+to the index.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>named_string_buffers: iterable of (name, string) tuples</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.name_to_docid">
+<tt class="descname">name_to_docid</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.name_to_docid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns docid for a given document name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.postings_list">
+<tt class="descname">postings_list</tt><big>(</big><em>term</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.postings_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return list of (docid, frequency) tuples for docs that contain term</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.query">
+<tt class="descname">query</tt><big>(</big><em>query_vec</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds documents similar to query_vec</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query_vec: term vector representing query document</dd>
+<dt>Returns:</dt>
+<dd>A iterable of (docname, score) tuples sorted by score</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.query_by_string">
+<tt class="descname">query_by_string</tt><big>(</big><em>query_string</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.query_by_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds documents similar to query_string.</p>
+<p>Convenience method that calls self.query()</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.set_query_scorer">
+<tt class="descname">set_query_scorer</tt><big>(</big><em>query_scorer</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.set_query_scorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the query_scorer</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>query_scorer: if string type, we assume it is a scorer name,</dt>
+<dd>else we assume it is itself a scoring object.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndex.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>**config</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update any configuration variables</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pysimsearch.sim_index.SimIndexCollection">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimIndexCollection</tt><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a SimIndex view over a sharded collection of SimIndexes</p>
+<p>Useful with collections of remote SimIndexes to provide a
+distributed indexing and serving architecture.</p>
+<p>Assumes document-level sharding:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">query()</span></tt> requests are routed to all shards in collection.</li>
+<li><tt class="docutils literal"><span class="pre">index_files()</span></tt> requests are routed according to a sharding function</li>
+</ul>
+</blockquote>
+<p>Note that if we had used query-sharding, then instead, queries would
+be routed using a sharding function, and index-requests would be
+routed to all shards.  The two sharding approaches correspond to either
+partitioning the postings matrix by columns (doc-sharding),
+or rows (query-sharding).</p>
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.add_shards">
+<tt class="descname">add_shards</tt><big>(</big><em>*sim_index_shards</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.add_shards" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.clear_shards">
+<tt class="descname">clear_shards</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.clear_shards" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.default_shard_func">
+<tt class="descname">default_shard_func</tt><big>(</big><em>shard_key</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.default_shard_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>implements the default sharding function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.docid_to_name">
+<tt class="descname">docid_to_name</tt><big>(</big><em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.docid_to_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translates global docid to name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.index_files">
+<tt class="descname">index_files</tt><big>(</big><em>named_files</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.index_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate to index_string_buffers() call, since file objects
+can&#8217;t be serialized for rpcs to backends.  Note: we
+currently read in all files in memory, and make one call to
+index_string_buffers() &#8211; this can be memory-intesive
+if named_files represents a large number of files.</p>
+<p>TODO: read in files in smaller batches, and then make mutiple
+calls to index_string_buffers().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.index_string_buffers">
+<tt class="descname">index_string_buffers</tt><big>(</big><em>named_string_buffers</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.index_string_buffers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Routes index_string_buffers() call to appropriate shard.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.index_urls">
+<tt class="descname">index_urls</tt><big>(</big><em>*urls</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.index_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>We expose this as a separate api, so that backends can fetch
+and index urls themselves.</p>
+<p>In contrast, index_files()/index_filenames() will read/collect data
+centrally, then dispatch fully materialized input data to backends
+for indexing.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pysimsearch.sim_index.SimIndexCollection.make_global_docid">
+<em class="property">static </em><tt class="descname">make_global_docid</tt><big>(</big><em>shard_id</em>, <em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.make_global_docid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.name_to_docid">
+<tt class="descname">name_to_docid</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.name_to_docid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translates name to global docid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.postings_list">
+<tt class="descname">postings_list</tt><big>(</big><em>term</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.postings_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns aggregated postings list in terms of global docids</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.query">
+<tt class="descname">query</tt><big>(</big><em>query_vec</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Issues query to collection and merges results</p>
+<p>TODO: use a merge alg. (heapq.merge doesn&#8217;t have a key= arg yet)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.set_query_scorer">
+<tt class="descname">set_query_scorer</tt><big>(</big><em>query_scorer</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.set_query_scorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes request to all shards.</p>
+<p>Note: if any backends are remote, query_scorer needs to be a
+scorer name, rather than a scorer object (which we currently
+can&#8217;t serialize for an rpc)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.set_shard_func">
+<tt class="descname">set_shard_func</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.set_shard_func" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.update_global_stats">
+<tt class="descname">update_global_stats</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.update_global_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches local stats from all shards, aggregates them, and
+rebroadcasts global stats back to shards.  Currently uses
+&#8220;brute-force&#8221;; incremental updating (in either direction)
+is not supported.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimpleMemorySimIndex</tt><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Simple implementation of SimIndex using in-memory data structures.
+(Not meant to scale to large datasets)</p>
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.docid_to_name">
+<tt class="descname">docid_to_name</tt><big>(</big><em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.docid_to_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.get_N">
+<tt class="descname">get_N</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.get_N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.get_df_map">
+<tt class="descname">get_df_map</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.get_df_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.get_local_N">
+<tt class="descname">get_local_N</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.get_local_N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.get_local_df_map">
+<tt class="descname">get_local_df_map</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.get_local_df_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.get_name_to_docid_map">
+<tt class="descname">get_name_to_docid_map</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.get_name_to_docid_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.index_files">
+<tt class="descname">index_files</tt><big>(</big><em>named_files</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.index_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a similarity index over collection given in named_files
+named_files is a list iterable of (filename, file) pairs</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.load">
+<em class="property">static </em><tt class="descname">load</tt><big>(</big><em>file</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Static method that returns a SimpleMemorySimIndex loaded from file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.name_to_docid">
+<tt class="descname">name_to_docid</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.name_to_docid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.postings_list">
+<tt class="descname">postings_list</tt><big>(</big><em>term</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.postings_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of (docid, freq) tuples for documents containing term</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.query">
+<tt class="descname">query</tt><big>(</big><em>query_vec</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds documents similar to query_vec</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query_vec: term vector representing query document</dd>
+<dt>Returns:</dt>
+<dd>A iterable of (docname, score) tuples sorted by score</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.save">
+<tt class="descname">save</tt><big>(</big><em>file</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saved index to file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.set_global_N">
+<tt class="descname">set_global_N</tt><big>(</big><em>N</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.set_global_N" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimpleMemorySimIndex.set_global_df_map">
+<tt class="descname">set_global_df_map</tt><big>(</big><em>df_map</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.set_global_df_map" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">pysimsearch 1.2.5 documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="similarity.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">similarity</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/sim_index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="similarity.html" title="The similarity Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pysimsearch 1.2.5 documentation"
+             >previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

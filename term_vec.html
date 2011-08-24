@@ -1,0 +1,136 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The term_vec Module &mdash; pysimsearch v0.25 documentation</title>
+    <link rel="stylesheet" href="static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.25',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
+    <link rel="prev" title="The query_scorer Module" href="query_scorer.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="query_scorer.html" title="The query_scorer Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.term_vec">
+<span id="the-term-vec-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">term_vec</span></tt> Module<a class="headerlink" href="#module-pysimsearch.term_vec" title="Permalink to this headline">¶</a></h1>
+<p>Term-vector operations</p>
+<dl class="function">
+<dt id="pysimsearch.term_vec.dot_product">
+<tt class="descclassname">pysimsearch.term_vec.</tt><tt class="descname">dot_product</tt><big>(</big><em>v1</em>, <em>v2</em><big>)</big><a class="headerlink" href="#pysimsearch.term_vec.dot_product" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns dot product of two term vectors</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pysimsearch.term_vec.l2_norm">
+<tt class="descclassname">pysimsearch.term_vec.</tt><tt class="descname">l2_norm</tt><big>(</big><em>v</em><big>)</big><a class="headerlink" href="#pysimsearch.term_vec.l2_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns L2 norm of term vector v</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pysimsearch.term_vec.mag_intersect">
+<tt class="descclassname">pysimsearch.term_vec.</tt><tt class="descname">mag_intersect</tt><big>(</big><em>A</em>, <em>B</em><big>)</big><a class="headerlink" href="#pysimsearch.term_vec.mag_intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns magnitude of multiset-intersection of A and B</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pysimsearch.term_vec.mag_union">
+<tt class="descclassname">pysimsearch.term_vec.</tt><tt class="descname">mag_union</tt><big>(</big><em>A</em>, <em>B</em><big>)</big><a class="headerlink" href="#pysimsearch.term_vec.mag_union" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns magnitude of multiset-union of A and B</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pysimsearch.term_vec.magnitude">
+<tt class="descclassname">pysimsearch.term_vec.</tt><tt class="descname">magnitude</tt><big>(</big><em>v</em><big>)</big><a class="headerlink" href="#pysimsearch.term_vec.magnitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns L2 norm of term vector v (identical to l2_norm())</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="query_scorer.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">query_scorer</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/term_vec.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="query_scorer.html" title="The query_scorer Module"
+             >previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

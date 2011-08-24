@@ -1,0 +1,12 @@
+@import url("default.css");
+
+dl.class {
+    background-color: #F2F2F2;
+    border-radius: 5px;
+    padding: 20px;
+}
+
+dl.class>dt {
+    font-weight: bold;
+    margin-bottom: 10px;
+}

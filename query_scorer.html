@@ -1,0 +1,207 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The query_scorer Module &mdash; pysimsearch v0.25 documentation</title>
+    <link rel="stylesheet" href="static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.25',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="static/jquery.js"></script>
+    <script type="text/javascript" src="static/underscore.js"></script>
+    <script type="text/javascript" src="static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
+    <link rel="next" title="The term_vec Module" href="term_vec.html" />
+    <link rel="prev" title="The sim_server Module" href="sim_server.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="term_vec.html" title="The term_vec Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="sim_server.html" title="The sim_server Module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.query_scorer">
+<span id="the-query-scorer-module"></span><h1>The <tt class="xref py py-mod docutils literal"><span class="pre">query_scorer</span></tt> Module<a class="headerlink" href="#module-pysimsearch.query_scorer" title="Permalink to this headline">¶</a></h1>
+<p>Scoring algorithms for finding similar documents</p>
+<dl class="class">
+<dt id="pysimsearch.query_scorer.QueryScorer">
+<em class="property">class </em><tt class="descclassname">pysimsearch.query_scorer.</tt><tt class="descname">QueryScorer</tt><a class="headerlink" href="#pysimsearch.query_scorer.QueryScorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interface for query scorers which score similarity search results</p>
+<p>QueryScorers are used by the SimIndex.query() method to handle the
+scoring of similarity search results.</p>
+<dl class="staticmethod">
+<dt id="pysimsearch.query_scorer.QueryScorer.make_scorer">
+<em class="property">static </em><tt class="descname">make_scorer</tt><big>(</big><em>scorer_type</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.QueryScorer.make_scorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a new scorer object</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pysimsearch.query_scorer.QueryScorer.register_scorers">
+<em class="property">static </em><tt class="descname">register_scorers</tt><big>(</big><em>scorer_map</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.QueryScorer.register_scorers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.query_scorer.QueryScorer.score_docs">
+<tt class="descname">score_docs</tt><big>(</big><em>query_vec</em>, <em>postings_lists</em>, <em>**extra</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.QueryScorer.score_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scores documents&#8217; similarities to query</p>
+<p>Scans postings_lists to compute similarity scores for docs for the
+query term vector</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query: the query document
+postings_lists: a list of postings lists for terms in query</dd>
+<dt>Returns:</dt>
+<dd>A sorted iterable of (docid, score) tuples</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pysimsearch.query_scorer.SimpleCountQueryScorer">
+<em class="property">class </em><tt class="descclassname">pysimsearch.query_scorer.</tt><tt class="descname">SimpleCountQueryScorer</tt><a class="headerlink" href="#pysimsearch.query_scorer.SimpleCountQueryScorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>QueryScorer that uses simple term frequencies for scoring.</p>
+<dl class="method">
+<dt id="pysimsearch.query_scorer.SimpleCountQueryScorer.score_docs">
+<tt class="descname">score_docs</tt><big>(</big><em>query_vec</em>, <em>postings_lists</em>, <em>**extra</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.SimpleCountQueryScorer.score_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scores query-document similarity using number of occurrences
+of query terms in document.  Multiple occurrences of a term
+in the query are ignored.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pysimsearch.query_scorer.TFIDFQueryScorer">
+<em class="property">class </em><tt class="descclassname">pysimsearch.query_scorer.</tt><tt class="descname">TFIDFQueryScorer</tt><big>(</big><em>tf_weight_type=u'raw'</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.TFIDFQueryScorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>QueryScorer that uses TFIDF weighting with the cosine similarity measure.</p>
+<p>This implementation is actually an approximation to the true
+cosine, because of the way we normalize by document length.
+When computing document length, we assume a term weight of 1 for
+each document term. E.g., we do not factor in term weights
+when computing the &#8220;document length&#8221;, since that would require
+choosing the weighting strategy at index time.</p>
+<p>Query length is ignored, as it has no effect on relative ordering</p>
+<dl class="staticmethod">
+<dt id="pysimsearch.query_scorer.TFIDFQueryScorer.idf_weight_log">
+<em class="property">static </em><tt class="descname">idf_weight_log</tt><big>(</big><em>N</em>, <em>df</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.TFIDFQueryScorer.idf_weight_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns idf weight</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.query_scorer.TFIDFQueryScorer.score_docs">
+<tt class="descname">score_docs</tt><big>(</big><em>query_vec</em>, <em>postings_lists</em>, <em>N</em>, <em>df_map</em>, <em>doc_len_map</em>, <em>**extra</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.TFIDFQueryScorer.score_docs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scores documents&#8217; similarities to query using cosine similarity
+in a vector space model.  Uses tf.idf weighting.</p>
+<p>An individual term hit is scored as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">idf</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_weight</span><span class="p">(</span><span class="n">q_tf</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tf_weight</span><span class="p">(</span><span class="n">d_tf</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The overall score for a doc is given by the sum of the term-hit scores</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pysimsearch.query_scorer.TFIDFQueryScorer.tf_weight_log">
+<em class="property">static </em><tt class="descname">tf_weight_log</tt><big>(</big><em>tf</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.TFIDFQueryScorer.tf_weight_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns sublinear scaling of tf: 1+log(tf)</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="pysimsearch.query_scorer.TFIDFQueryScorer.tf_weight_raw">
+<em class="property">static </em><tt class="descname">tf_weight_raw</tt><big>(</big><em>tf</em><big>)</big><a class="headerlink" href="#pysimsearch.query_scorer.TFIDFQueryScorer.tf_weight_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns unscaled tf</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="sim_server.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">sim_server</span></tt> Module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="term_vec.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">term_vec</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="sources/query_scorer.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="term_vec.html" title="The term_vec Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="sim_server.html" title="The sim_server Module"
+             >previous</a> |</li>
+        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

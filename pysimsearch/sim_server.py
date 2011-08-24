@@ -29,13 +29,11 @@
 
 '''
 SimServer
-=========
 
 Server wrapper for pysimsearch modules.  Currently, only provides access
 to sim_index.
 
-Sample session
---------------
+*Sample session:*
 
 **Server**
 ::

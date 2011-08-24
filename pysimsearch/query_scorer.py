@@ -144,7 +144,7 @@ class TFIDFQueryScorer(QueryScorer):
         Scores documents' similarities to query using cosine similarity
         in a vector space model.  Uses tf.idf weighting.
         
-        An individual term hit is scored as
+        An individual term hit is scored as::
         
             idf * self.tf_weight(q_tf) * self.tf_weight(d_tf)
         

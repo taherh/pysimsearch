@@ -36,17 +36,16 @@ Sample usage::
     from pysimsearch import doc_reader
 
     sim_index = SimpleMemorySimIndex()
-    sim_index.index_files(
-        doc_reader.get_named_text_files('http://www.stanford.edu/',
-                                        'http://www.berkeley.edu',
-                                        'http://www.ucla.edu',
-                                        'http://www.mit.edu'))
+    sim_index.index_filenames('http://www.stanford.edu/',
+                              'http://www.berkeley.edu',
+                              'http://www.ucla.edu',
+                              'http://www.mit.edu')
     print(sim_index.postings_list('university'))
     print(list(sim_index.docnames_with_terms('university', 'california')))
     
     sim_index.set_query_scorer('simple_count')
-    print(list(sim_index.query(
-        doc_reader.term_vec_from_string("stanford university"))))
+    print(list(sim_index.query_by_string("stanford university")))
+
 '''
 
 from __future__ import (division, absolute_import, print_function,

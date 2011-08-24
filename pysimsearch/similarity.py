@@ -26,7 +26,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-'''
+r'''
 Sample usage as a script::
 
     $ python similarity.py http://www.stanford.edu/ http://www.berkeley.edu/ http://www.mit.edu/
@@ -60,7 +60,7 @@ from .term_vec import *
 
 # --- top-level functions ---
 def measure_similarity(file_a, file_b, sim_func = None):
-    '''
+    r'''
     Returns the textual similarity of term_vec_a and term_vec_b using chosen
     similarity metric
     
@@ -74,7 +74,7 @@ def measure_similarity(file_a, file_b, sim_func = None):
     return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
 
 def pairwise_compare_files(*named_files):
-    '''
+    r'''
     Do a pairwise comparison of the 'named_files'and print their
     pairwise similarities
     '''
@@ -89,7 +89,7 @@ def pairwise_compare_files(*named_files):
     return similarities
 
 def pairwise_compare_filenames(*filenames):
-    '''
+    r'''
     Do a pairwise comparison of the documents specified by 'filenames'
     and return their pairwise similarities
     '''    
@@ -108,7 +108,7 @@ def pairwise_compare_filenames(*filenames):
 # --- Similarity measures ---
     
 def cosine_sim(u, v):
-    '''
+    r'''
     Returns the cosine similarity of u,v: <u,v>/(|u||v|)
     where |u| is the L2 norm
     '''

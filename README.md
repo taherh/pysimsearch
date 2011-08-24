@@ -3,6 +3,8 @@ PySimSearch
 
 Python library for indexing and similarity-search.
 
+Full documentation is at http://taherh.github.com/pysimsearch/
+
 This library is primarily for pedagogical purposes, not production usage.  The
 code here is meant to illustrate the basic workings of similarity and indexing
 engines, without worrying about scalability.  Although scalability is essential

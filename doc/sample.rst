@@ -1,0 +1,4 @@
+Example
+-------
+
+.. literalinclude:: sample.py

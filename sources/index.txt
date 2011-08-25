@@ -11,7 +11,7 @@ code here is meant to illustrate the basic workings of similarity and indexing
 engines, without worrying about scalability.  Although scalability is essential
 for any real indexing engine, the additional complexity that introduces often
 obscures the simple concepts that drive modern information retrieval systems.
-Although it is currently for Python 2.7 series, we use `__future__` imports
+Although it is currently for Python 2.7 series, we use ``__future__`` imports
 to match Python 3 as closely as possible.
 
 Quickstart:

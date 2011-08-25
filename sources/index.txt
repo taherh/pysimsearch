@@ -15,7 +15,7 @@ efficiency down to the byte is necessary for any production indexing engine, the
 additional complexity that introduces often obscures the simple concepts that
 drive modern information retrieval systems.  Certain patterns used for scaling
 indexes (e.g., distributed indexes) are included, although not optimized nearly
-to the extent necessary for large-scale produciton use.
+to the extent necessary for large-scale production use.
 
 Although the code is currently for Python 2.7 series, we use ``__future__``
 imports to match Python 3 as closely as possible.

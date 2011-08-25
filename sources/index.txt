@@ -11,7 +11,7 @@ Download from `GitHub <http://github.com/taherh/pysimsearch>`_
 This library is primarily for pedagogical purposes, not production use.  The
 code here is meant to illustrate the basic workings of similarity and indexing
 engines, without worrying much about optimization and efficiency.  Although
-efficiency down to the byte is necessary for any real indexing engine, the
+efficiency down to the byte is necessary for any production indexing engine, the
 additional complexity that introduces often obscures the simple concepts that
 drive modern information retrieval systems.  Certain patterns used for scaling
 indexes (e.g., distributed indexes) are included, although not optimized nearly

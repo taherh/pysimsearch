@@ -5,13 +5,23 @@ Python library for indexing and similarity-search.
 
 Full documentation is at http://taherh.github.com/pysimsearch/
 
-This library is primarily for pedagogical purposes, not production usage.  The
+This library is primarily for pedagogical purposes, not production use.  The
 code here is meant to illustrate the basic workings of similarity and indexing
-engines, without worrying about scalability.  Although scalability is essential
-for any real indexing engine, the additional complexity that introduces often
-obscures the simple concepts that drive modern information retrieval systems.
-Although it is currently for Python 2.7 series, we use `__future__` imports
-to match Python 3 as closely as possible.
+engines, without worrying much about optimization and efficiency.  Although
+efficiency down to the byte is necessary for any real indexing engine, the
+additional complexity that introduces often obscures the simple concepts that
+drive modern information retrieval systems.  Certain patterns used for scaling
+indexes (e.g., distributed indexes) are included, although not optimized nearly
+to the extent necessary for large-scale produciton use.
+
+Although the code is currently for Python 2.7 series, we use ``__future__``
+imports to match Python 3 as closely as possible.
+
+If you are interested in learning more about search and information retrieval,
+I highly recommend the following two books:
+
+* [Managing Gigabytes](http://amzn.to/qg6Zhe), by Witten, Moffat, and Bell
+* [Introduction to Information Retrieval](http://amzn.to/oz2O27), by Manning, Schütze, and Raghavan
 
 Sample command-line usage
 -------------------------

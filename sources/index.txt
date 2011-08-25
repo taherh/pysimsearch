@@ -14,6 +14,15 @@ obscures the simple concepts that drive modern information retrieval systems.
 Although it is currently for Python 2.7 series, we use ``__future__`` imports
 to match Python 3 as closely as possible.
 
+If you are interested in learning more about search and information retrieval,
+I highly recommend the following two books:
+
+* `Managing Gigabytes`_, by Witten, Moffat, and Bell
+.. _Managing Gigabytes: http://www.amazon.com/gp/product/1558605703/ref=as_li_ss_tl?ie=UTF8&tag=tahehavewebl-20&linkCode=as2&camp=217145&creative=399369&creativeASIN=1558605703
+* `Introduction to Information Retrieval`_, by Manning, Schütze, and Raghavan
+.. _Introduction to Information Retrieval: http://www.amazon.com/gp/product/0521865719/ref=as_li_ss_tl?ie=UTF8&tag=tahehavewebl-20&linkCode=as2&camp=217145&creative=399369&creativeASIN=0521865719
+
+
 Quickstart:
 -----------
 

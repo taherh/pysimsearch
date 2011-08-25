@@ -6,21 +6,27 @@ pysimsearch 1.2.5 documentation
 
 Python library for indexing and similarity-search.
 
-This library is primarily for pedagogical purposes, not production usage.  The
+Download from `GitHub <http://github.com/taherh/pysimsearch>`_
+
+This library is primarily for pedagogical purposes, not production use.  The
 code here is meant to illustrate the basic workings of similarity and indexing
-engines, without worrying about scalability.  Although scalability is essential
-for any real indexing engine, the additional complexity that introduces often
-obscures the simple concepts that drive modern information retrieval systems.
-Although it is currently for Python 2.7 series, we use ``__future__`` imports
-to match Python 3 as closely as possible.
+engines, without worrying much about optimization and efficiency.  Although
+efficiency down to the byte is necessary for any real indexing engine, the
+additional complexity that introduces often obscures the simple concepts that
+drive modern information retrieval systems.  Certain patterns used for scaling
+indexes (e.g., distributed indexes) are included, although not optimized nearly
+to the extent necessary for large-scale produciton use.
+
+Although the code is currently for Python 2.7 series, we use ``__future__``
+imports to match Python 3 as closely as possible.
 
 If you are interested in learning more about search and information retrieval,
 I highly recommend the following two books:
 
 * `Managing Gigabytes`_, by Witten, Moffat, and Bell
-.. _Managing Gigabytes: http://www.amazon.com/gp/product/1558605703/ref=as_li_ss_tl?ie=UTF8&tag=tahehavewebl-20&linkCode=as2&camp=217145&creative=399369&creativeASIN=1558605703
+.. _Managing Gigabytes: http://amzn.to/qg6Zhe
 * `Introduction to Information Retrieval`_, by Manning, Schütze, and Raghavan
-.. _Introduction to Information Retrieval: http://www.amazon.com/gp/product/0521865719/ref=as_li_ss_tl?ie=UTF8&tag=tahehavewebl-20&linkCode=as2&camp=217145&creative=399369&creativeASIN=0521865719
+.. _Introduction to Information Retrieval: http://amzn.to/oz2O27
 
 
 Quickstart:
@@ -63,8 +69,6 @@ API:
 
 .. automodule:: pysimsearch
    :members:
-
-
 
 
 Indices and tables

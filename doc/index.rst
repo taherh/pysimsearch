@@ -6,6 +6,8 @@ pysimsearch 1.2.5 documentation
 
 Python library for indexing and similarity-search.
 
+Download from `GitHub <http://github.com/taherh/pysimsearch>`_
+
 This library is primarily for pedagogical purposes, not production use.  The
 code here is meant to illustrate the basic workings of similarity and indexing
 engines, without worrying much about optimization and efficiency.  Although

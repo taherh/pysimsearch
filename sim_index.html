@@ -24,7 +24,7 @@
     <script type="text/javascript" src="static/doctools.js"></script>
     <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
     <link rel="next" title="The similarity Module" href="similarity.html" />
-    <link rel="prev" title="pysimsearch 1.2.5 documentation" href="index.html" />
+    <link rel="prev" title="pysimsearch 0.2.5 documentation" href="index.html" />
  
     <script type="text/javascript">
       var _gaq = _gaq || [];
@@ -53,7 +53,7 @@
           <a href="similarity.html" title="The similarity Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pysimsearch 1.2.5 documentation"
+          <a href="index.html" title="pysimsearch 0.2.5 documentation"
              accesskey="P">previous</a> |</li>
         <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
       </ul>
@@ -86,7 +86,7 @@
 <dl class="class">
 <dt id="pysimsearch.sim_index.RemoteSimIndex">
 <em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">RemoteSimIndex</tt><big>(</big><em>server_url</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.RemoteSimIndex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Proxy to a remote SimIndex</p>
+<dd><p>Proxy to a remote <tt class="docutils literal"><span class="pre">SimIndex</span></tt></p>
 </dd></dl>
 
 <dl class="class">
@@ -120,26 +120,39 @@ several methods.</p>
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndex.index_filenames">
 <tt class="descname">index_filenames</tt><big>(</big><em>*filenames</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_filenames" title="Permalink to this definition">¶</a></dt>
-<dd><p>Build a similarity index over files given by filenames
-(Convenience method that wraps index_files())</p>
+<dd><p>Build a similarity index over files given by filenames</p>
+<p>Convenience method that wraps index_files()</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><a href="#id1"><span class="problematic" id="id2">*</span></a>filenames: list of filenames to add to the index.</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndex.index_files">
 <tt class="descname">index_files</tt><big>(</big><em>named_files</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_files" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds collection given in named_files to the index.
-named_files is an iterable of (filename, file) pairs.</p>
-<p>Takes ownership of (and consumes) named_files</p>
+<dd><p>Adds files given in named_files to the index.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>named_files: iterable of (filename, file) pairs.</dt>
+<dd>Takes ownership of (and consumes) the files.</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndex.index_string_buffers">
 <tt class="descname">index_string_buffers</tt><big>(</big><em>named_string_buffers</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.index_string_buffers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Adds collection of string buffers given in named_string_buffers
-to the index.</p>
+<dd><p>Adds string buffers to the index.</p>
 <dl class="docutils">
 <dt>Params:</dt>
-<dd>named_string_buffers: iterable of (name, string) tuples</dd>
+<dd><dl class="first last docutils">
+<dt>named_string_buffers: iterable of (name, string) tuples, where</dt>
+<dd>the string contains the data to index.</dd>
+</dl>
+</dd>
 </dl>
 </dd></dl>
 
@@ -171,7 +184,11 @@ to the index.</p>
 <dt id="pysimsearch.sim_index.SimIndex.query_by_string">
 <tt class="descname">query_by_string</tt><big>(</big><em>query_string</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.query_by_string" title="Permalink to this definition">¶</a></dt>
 <dd><p>Finds documents similar to query_string.</p>
-<p>Convenience method that calls self.query()</p>
+<p>Convenience method that calls <tt class="docutils literal"><span class="pre">self.query()</span></tt></p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query_string: the query given as a string</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -182,7 +199,8 @@ to the index.</p>
 <dt>Params:</dt>
 <dd><dl class="first last docutils">
 <dt>query_scorer: if string type, we assume it is a scorer name,</dt>
-<dd>else we assume it is itself a scoring object.</dd>
+<dd>else we assume it is itself a scoring object
+of base type <tt class="docutils literal"><span class="pre">query_scorer.QueryScorer</span></tt>.</dd>
 </dl>
 </dd>
 </dl>
@@ -191,7 +209,11 @@ to the index.</p>
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndex.update_config">
 <tt class="descname">update_config</tt><big>(</big><em>**config</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndex.update_config" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update any configuration variables</p>
+<dd><p>Update configuration variables</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><a href="#id3"><span class="problematic" id="id4">**</span></a>config: config var assignments</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -199,7 +221,7 @@ to the index.</p>
 <dl class="class">
 <dt id="pysimsearch.sim_index.SimIndexCollection">
 <em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimIndexCollection</tt><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection" title="Permalink to this definition">¶</a></dt>
-<dd><p>Provides a SimIndex view over a sharded collection of SimIndexes</p>
+<dd><p>Provides a <tt class="docutils literal"><span class="pre">SimIndex</span></tt> view over a sharded collection of SimIndexes</p>
 <p>Useful with collections of remote SimIndexes to provide a
 distributed indexing and serving architecture.</p>
 <p>Assumes document-level sharding:</p>
@@ -257,10 +279,11 @@ calls to index_string_buffers().</p>
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndexCollection.index_urls">
 <tt class="descname">index_urls</tt><big>(</big><em>*urls</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.index_urls" title="Permalink to this definition">¶</a></dt>
-<dd><p>We expose this as a separate api, so that backends can fetch
-and index urls themselves.</p>
-<p>In contrast, index_files()/index_filenames() will read/collect data
-centrally, then dispatch fully materialized input data to backends
+<dd><p>Index web pages given by urls</p>
+<p>We expose this as a separate api from <tt class="docutils literal"><span class="pre">index_filenames()</span></tt>, so that
+backends can fetch and index urls themselves.</p>
+<p>In contrast, <tt class="docutils literal"><span class="pre">index_files()</span></tt> and <tt class="docutils literal"><span class="pre">index_filenames()</span></tt> read/collect
+data centrally, then dispatch fully materialized input data to backends
 for indexing.</p>
 </dd></dl>
 
@@ -284,17 +307,24 @@ for indexing.</p>
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndexCollection.query">
 <tt class="descname">query</tt><big>(</big><em>query_vec</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.query" title="Permalink to this definition">¶</a></dt>
-<dd><p>Issues query to collection and merges results</p>
+<dd><p>Issues query to collection and returns merged results</p>
 <p>TODO: use a merge alg. (heapq.merge doesn&#8217;t have a key= arg yet)</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimIndexCollection.set_query_scorer">
 <tt class="descname">set_query_scorer</tt><big>(</big><em>query_scorer</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.set_query_scorer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Passes request to all shards.</p>
-<p>Note: if any backends are remote, query_scorer needs to be a
-scorer name, rather than a scorer object (which we currently
-can&#8217;t serialize for an rpc)</p>
+<dd><p>Passes <tt class="docutils literal"><span class="pre">set_query_scorer()</span></tt> request to all shards.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>query_scorer: scorer object or name. If any backends are remote,</dt>
+<dd>query_scorer needs to be a scorer name, rather than
+a scorer object (which we currently don&#8217;t serialize
+for rpcs)</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -316,8 +346,8 @@ is not supported.</p>
 <dl class="class">
 <dt id="pysimsearch.sim_index.SimpleMemorySimIndex">
 <em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimpleMemorySimIndex</tt><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex" title="Permalink to this definition">¶</a></dt>
-<dd><p>Simple implementation of SimIndex using in-memory data structures.
-(Not meant to scale to large datasets)</p>
+<dd><p>Simple implementation of the <tt class="docutils literal"><span class="pre">SimIndex</span></tt> interface using in-memory data
+structures.</p>
 <dl class="method">
 <dt id="pysimsearch.sim_index.SimpleMemorySimIndex.docid_to_name">
 <tt class="descname">docid_to_name</tt><big>(</big><em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.docid_to_name" title="Permalink to this definition">¶</a></dt>
@@ -358,7 +388,7 @@ named_files is a list iterable of (filename, file) pairs</p>
 <dl class="staticmethod">
 <dt id="pysimsearch.sim_index.SimpleMemorySimIndex.load">
 <em class="property">static </em><tt class="descname">load</tt><big>(</big><em>file</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimpleMemorySimIndex.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Static method that returns a SimpleMemorySimIndex loaded from file</p>
+<dd><p>Returns a <tt class="docutils literal"><span class="pre">SimpleMemorySimIndex</span></tt> loaded from pickle file</p>
 </dd></dl>
 
 <dl class="method">
@@ -412,10 +442,10 @@ named_files is a list iterable of (filename, file) pairs</p>
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">pysimsearch 1.2.5 documentation</a></p>
+                        title="previous chapter">pysimsearch 0.2.5 documentation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="similarity.html"
-                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">similarity</span></tt> Module</a></p>
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">similarity</span></tt> Module</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="sources/sim_index.txt"
@@ -451,7 +481,7 @@ named_files is a list iterable of (filename, file) pairs</p>
           <a href="similarity.html" title="The similarity Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="pysimsearch 1.2.5 documentation"
+          <a href="index.html" title="pysimsearch 0.2.5 documentation"
              >previous</a> |</li>
         <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
       </ul>

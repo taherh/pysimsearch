@@ -91,7 +91,11 @@ class SimIndex(object):
         self.query_scorer = None
 
     def update_config(self, **config):
-        '''Update any configuration variables'''
+        '''Update configuration variables
+        
+        Params:
+            **config: config var assignments
+        '''
         self.config.update(config)
         
     def set_query_scorer(self, query_scorer):
@@ -99,7 +103,8 @@ class SimIndex(object):
         
         Params:
             query_scorer: if string type, we assume it is a scorer name,
-                          else we assume it is itself a scoring object.
+                          else we assume it is itself a scoring object
+                          of base type ``query_scorer.QueryScorer``.
         '''
         if isinstance(query_scorer, basestring):
             self.query_scorer = QueryScorer.make_scorer(query_scorer)
@@ -108,29 +113,31 @@ class SimIndex(object):
 
     @abc.abstractmethod
     def index_files(self, named_files):
-        '''
-        Adds collection given in named_files to the index.
-        named_files is an iterable of (filename, file) pairs.
+        '''Adds files given in named_files to the index.
         
-        Takes ownership of (and consumes) named_files
+        Params:
+            named_files: iterable of (filename, file) pairs.
+                         Takes ownership of (and consumes) the files.
         '''
         return
 
     def index_filenames(self, *filenames):
-        '''
-        Build a similarity index over files given by filenames
-        (Convenience method that wraps index_files())
+        '''Build a similarity index over files given by filenames
+        
+        Convenience method that wraps index_files()
+        
+        Params:
+            *filenames: list of filenames to add to the index.
         '''
         return self.index_files(zip(filenames,
                                     doc_reader.get_text_files(*filenames)))
 
     def index_string_buffers(self, named_string_buffers):
-        '''
-        Adds collection of string buffers given in named_string_buffers
-        to the index.
+        '''Adds string buffers to the index.
         
         Params:
-            named_string_buffers: iterable of (name, string) tuples
+            named_string_buffers: iterable of (name, string) tuples, where
+                                  the string contains the data to index.
             
         '''
         named_files = []
@@ -176,8 +183,7 @@ class SimIndex(object):
         
     @abc.abstractmethod
     def query(self, query_vec):
-        '''
-        Finds documents similar to query_vec
+        '''Finds documents similar to query_vec
         
         Params:
             query_vec: term vector representing query document
@@ -190,7 +196,10 @@ class SimIndex(object):
     def query_by_string(self, query_string):
         '''Finds documents similar to query_string.
         
-        Convenience method that calls self.query()
+        Convenience method that calls ``self.query()``
+        
+        Params:
+            query_string: the query given as a string
         '''
         if isinstance(query_string, str):
             query_string = unicode(query_string)
@@ -198,8 +207,8 @@ class SimIndex(object):
 
 class SimpleMemorySimIndex(SimIndex):
     '''
-    Simple implementation of SimIndex using in-memory data structures.
-    (Not meant to scale to large datasets)
+    Simple implementation of the ``SimIndex`` interface using in-memory data
+    structures.
     '''
 
     def __init__(self):
@@ -279,8 +288,7 @@ class SimpleMemorySimIndex(SimIndex):
         return self.term_index[term]
         
     def query(self, query_vec):
-        '''
-        Finds documents similar to query_vec
+        '''Finds documents similar to query_vec
         
         Params:
             query_vec: term vector representing query document
@@ -312,16 +320,20 @@ class SimpleMemorySimIndex(SimIndex):
         
     @staticmethod
     def load(file):
-        '''
-        Static method that returns a SimpleMemorySimIndex loaded from file
+        '''Returns a ``SimpleMemorySimIndex`` loaded from pickle file
         '''
         return pickle.load(file)
         
     
 class RemoteSimIndex(object):
-    '''Proxy to a remote SimIndex'''
+    '''Proxy to a remote ``SimIndex``'''
     
     def __init__(self, server_url):
+        '''Initialize with server_url
+        
+        Params:
+            server_url: url for remote ``SimIndex`` server
+        '''
         # can't import at top level because of circular dependency
         from . import sim_server
         self.PREFIX = sim_server.SimIndexService.PREFIX
@@ -336,7 +348,7 @@ class RemoteSimIndex(object):
     
 class SimIndexCollection(SimIndex):
     '''
-    Provides a SimIndex view over a sharded collection of SimIndexes
+    Provides a ``SimIndex`` view over a sharded collection of SimIndexes
     
     Useful with collections of remote SimIndexes to provide a
     distributed indexing and serving architecture.
@@ -391,9 +403,7 @@ class SimIndexCollection(SimIndex):
         self.update_global_stats()
         
     def index_string_buffers(self, named_string_buffers):
-        '''
-        Routes index_string_buffers() call to appropriate shard.
-        '''
+        '''Routes index_string_buffers() call to appropriate shard.'''
         # minimize rpcs by collecting (name, buffer) tuples for
         # different shards up-front
         sharded_input_map = defaultdict(list)
@@ -401,6 +411,7 @@ class SimIndexCollection(SimIndex):
             sharded_input_map[self.shard_func(name)].append((name, buffer))
 
         # issue an indexing rpc to each sharded backend that has some input
+        # TODO: use non-blocking rpc's
         for shard_id in sharded_input_map:
             self.shards[shard_id].index_string_buffers(
                 sharded_input_map[shard_id]
@@ -409,21 +420,23 @@ class SimIndexCollection(SimIndex):
         self.update_global_stats()
         
     def index_urls(self, *urls):
-        '''
-        We expose this as a separate api, so that backends can fetch
-        and index urls themselves.
+        '''Index web pages given by urls
         
-        In contrast, index_files()/index_filenames() will read/collect data
-        centrally, then dispatch fully materialized input data to backends
+        We expose this as a separate api from ``index_filenames()``, so that
+        backends can fetch and index urls themselves.
+        
+        In contrast, ``index_files()`` and ``index_filenames()`` read/collect
+        data centrally, then dispatch fully materialized input data to backends
         for indexing.
         '''
         # minimize rpcs by collecting (name, buffer) tuples for
         # different shards up-front
-        sharded_input_map = defaultdict([])
+        sharded_input_map = defaultdict(list)
         for url in urls:
             sharded_input_map[self.shard_func(url)].append(url)
 
         # issue an indexing call to each sharded backend that has some input
+        # TODO: use non-blocking rpc's
         for shard_id in sharded_input_map:
             self.shards[shard_id].index_filenames(
                 *sharded_input_map[shard_id]
@@ -457,18 +470,19 @@ class SimIndexCollection(SimIndex):
         return postings_lists
     
     def set_query_scorer(self, query_scorer):
-        '''Passes request to all shards.
+        '''Passes ``set_query_scorer()`` request to all shards.
         
-        Note: if any backends are remote, query_scorer needs to be a
-        scorer name, rather than a scorer object (which we currently
-        can't serialize for an rpc)
+        Params:
+            query_scorer: scorer object or name. If any backends are remote,
+                          query_scorer needs to be a scorer name, rather than
+                          a scorer object (which we currently don't serialize
+                          for rpcs)
         '''
         for shard in self.shards:
             shard.set_query_scorer(query_scorer)
             
     def query(self, query_vec):
-        '''
-        Issues query to collection and merges results
+        '''Issues query to collection and returns merged results
         
         TODO: use a merge alg. (heapq.merge doesn't have a key= arg yet)
         '''

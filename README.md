@@ -116,11 +116,11 @@ Sample SimIndexCollection Usage
     >>> index_coll = SimIndexCollection()
     >>> index_coll.add_shards(*servers)
     >>> index_coll.set_query_scorer('tfidf')
-    >>> index_coll.index_string_buffers((('d1', 'hello there'),
-                                         ('d2', 'what are you'),
-                                         ('d3', 'ok thats enough'),
-                                         ('d4', 'wait what hello')))
-    >>> pprint(index_coll.query_by_string('hello ok enough'))
-    [[u'd3', 1.6007548451372582],
-     [u'd1', 0.49012907173427356],
-     [u'd4', 0.40018871128431455]]
+    >>> index_coll.index_urls('http://www.stanford.edu/',
+                              'http://www.berkeley.edu',
+                              'http://www.ucla.edu',
+                              'http://www.mit.edu')
+    >>> index_coll.query_by_string("stanford university")
+    [(u'http://www.stanford.edu/', 0.6051137187642046),
+     (u'http://www.ucla.edu', 0.05827029826763635),
+     (u'http://www.berkeley.edu', 0.025809675718971692)]

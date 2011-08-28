@@ -324,45 +324,6 @@ class SimpleMemorySimIndex(SimIndex):
         return pickle.load(file)
         
     
-class RemoteSimIndex(object):
-    '''Proxy to a remote ``SimIndex``
-    
-    ``RemoteSimIndex`` is compatible with the ``SimIndex`` interface,
-    and provides access to a remote index.  We use this in place of
-    directly using a jsonrpclib.Server() object because we need an object
-    that acts like type ``SimIndex``.
-    
-    Instantiate a ``RemoteSimIndex`` as follows:
-    
-    >>> remote_index = RemoteSimIndex('http://localhost:9001/RPC2')
-    >>> remote_index.query_by_string('university')
-    ...
-    
-    
-    '''
-    
-    def __init__(self, server_url):
-        '''Initialize with server_url
-        
-        Params:
-            server_url: url for remote ``SimIndex`` server
-        '''
-        # can't import at top level because of circular dependency
-        from . import sim_server
-        self.PREFIX = sim_server.SimIndexService.PREFIX
-        self.EXPORTED_METHODS = sim_server.SimIndexService.EXPORTED_METHODS
-        self._server = rpclib.Server(server_url)
-        
-    def __getattr__(self, name):
-        if name in self.EXPORTED_METHODS:
-            func = getattr(self._server,
-                           self.PREFIX + '.' + name)
-            return func
-
-# RemoteSimIndex is a subtype of SimIndex    
-SimIndex.register(RemoteSimIndex)
-
-
 class SimIndexCollection(SimIndex):
     '''
     Provides a ``SimIndex`` view over a sharded collection of SimIndexes
@@ -546,3 +507,43 @@ class SimIndexCollection(SimIndex):
                 gdocid = self.make_global_docid(shard_id, docid)
                 self.name_to_docid_map[name] = gdocid
                 self.docid_to_name_map[gdocid] = name
+
+
+class RemoteSimIndex(object):
+    '''Proxy to a remote ``SimIndex``
+    
+    ``RemoteSimIndex`` is compatible with the ``SimIndex`` interface,
+    and provides access to a remote index.  We use this in place of
+    directly using a jsonrpclib.Server() object because we need an object
+    that acts like type ``SimIndex``.
+    
+    Instantiate a ``RemoteSimIndex`` as follows:
+    
+    >>> remote_index = RemoteSimIndex('http://localhost:9001/RPC2')
+    >>> remote_index.query_by_string('university')
+    ...
+    
+    '''
+    
+    def __init__(self, server_url):
+        '''Initialize with server_url
+        
+        Params:
+            server_url: url for remote ``SimIndex`` server
+        '''
+        # can't import at top level because of circular dependency
+        from . import sim_server
+        self.PREFIX = sim_server.SimIndexService.PREFIX
+        self.EXPORTED_METHODS = sim_server.SimIndexService.EXPORTED_METHODS
+        self._server = rpclib.Server(server_url)
+        
+    def __getattr__(self, name):
+        if name in self.EXPORTED_METHODS:
+            func = getattr(self._server,
+                           self.PREFIX + '.' + name)
+            return func
+
+# RemoteSimIndex is a subtype of SimIndex    
+SimIndex.register(RemoteSimIndex)
+
+

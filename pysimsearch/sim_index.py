@@ -214,9 +214,11 @@ class SimpleMemorySimIndex(SimIndex):
     def __init__(self):
         super(SimpleMemorySimIndex, self).__init__();
         
+        # index data
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
         self.term_index = defaultdict(list)
+        self.docid_to_feature_map = {}  # document level features
         self.N = 0
 
         # additional stats used for scoring
@@ -309,9 +311,7 @@ class SimpleMemorySimIndex(SimIndex):
         return ((self.docid_to_name(docid), score) for (docid, score) in hits)
         
     def save(self, file):
-        '''
-        Saved index to file
-        '''
+        '''Saved index to file'''
         # pickle won't let us save query_scorer
         qs = self.query_scorer
         self.query_scorer = None
@@ -320,13 +320,26 @@ class SimpleMemorySimIndex(SimIndex):
         
     @staticmethod
     def load(file):
-        '''Returns a ``SimpleMemorySimIndex`` loaded from pickle file
-        '''
+        '''Returns a ``SimpleMemorySimIndex`` loaded from pickle file'''
         return pickle.load(file)
         
     
 class RemoteSimIndex(object):
-    '''Proxy to a remote ``SimIndex``'''
+    '''Proxy to a remote ``SimIndex``
+    
+    ``RemoteSimIndex`` is compatible with the ``SimIndex`` interface,
+    and provides access to a remote index.  We use this in place of
+    directly using a jsonrpclib.Server() object because we need an object
+    that acts like type ``SimIndex``.
+    
+    Instantiate a ``RemoteSimIndex`` as follows:
+    
+    >>> remote_index = RemoteSimIndex('http://localhost:9001/RPC2')
+    >>> remote_index.query_by_string('university')
+    ...
+    
+    
+    '''
     
     def __init__(self, server_url):
         '''Initialize with server_url
@@ -345,7 +358,11 @@ class RemoteSimIndex(object):
             func = getattr(self._server,
                            self.PREFIX + '.' + name)
             return func
-    
+
+# RemoteSimIndex is a subtype of SimIndex    
+SimIndex.register(RemoteSimIndex)
+
+
 class SimIndexCollection(SimIndex):
     '''
     Provides a ``SimIndex`` view over a sharded collection of SimIndexes

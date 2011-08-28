@@ -1,7 +1,7 @@
 .. PySimSearch documentation master file, created by
    sphinx-quickstart on Mon Jul 25 22:06:33 2011.
 
-pysimsearch 0.2.5 documentation
+pysimsearch |version| documentation
 =======================================
 
 Python library for indexing and similarity-search.

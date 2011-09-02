@@ -68,7 +68,9 @@ class SimIndexTest(object):
     golden_postings = { 'hello': {'doc1': 2, 'doc2': 1, 'doc3': 1},
                         'there': {'doc1': 1, 'doc3': 1},
                         'world': {'doc1': 1, 'doc2': 1},
-                        'bob': {'doc3': 1} }
+                        'bob': {'doc3': 1},
+                        'nobody': {},
+                        '': {}}
 
     # Golden hits data (Conjunctive: Requires presence of all terms)
     #

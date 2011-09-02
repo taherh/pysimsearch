@@ -34,8 +34,9 @@ from __future__ import(division, absolute_import, print_function,
                        unicode_literals)
 
 import codecs
-import re
 import io
+import re
+
 import httplib2
 import lxml.html
 from lxml.html.clean import clean_html
@@ -68,22 +69,25 @@ def get_named_text_files(*names):
     and/or urls (convenience function)
     '''
     return zip(names, get_text_files(*names))
-    
-def term_vec(file):
+
+def term_vec(file, stoplist = None):
     '''
     Returns a term vector for 'file', represented as a dictionary
     of the form {term: frequency}
     
     Takes ownership of file   
     '''
+    # default args:
+    if stoplist is None:
+        stoplist = set()
     
     with file as f:
         tf_dict = {}
         for line in f:
             for term in line.split():
-                if not term in tf_dict:
-                    tf_dict[term] = 0
-                tf_dict[term] += 1
+                if term not in stoplist:
+                    if term not in tf_dict: tf_dict[term] = 0
+                    tf_dict[term] += 1
         return tf_dict
     
 def term_vec_from_string(s):

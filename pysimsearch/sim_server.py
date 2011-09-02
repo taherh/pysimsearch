@@ -41,7 +41,7 @@ to sim_index.
     bash$ ./sim_server.py sim_index -p 9001
     Use Control-C to exit
 
-**Client**
+**jsonrpclib Client**
 
 >>> from pprint import pprint
 >>> import jsonrpclib
@@ -51,7 +51,12 @@ to sim_index.
 [[u'http://www.stanford.edu/', 0.10469570845856098],
  [u'http://www.ucla.edu', 0.04485065887313478],
  [u'http://www.berkeley.edu', 0.020464326883958977]]
->>> pprint(server.sim_index.query_by_string('university'))
+
+** pysimsearch Client **
+>>> from pysimsearch import sim_index
+>>> index = sim_index.RemoteSimIndex('http://localhost:9001/RPC2')
+>>> index.index_filenames('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
+>>> pprint(index.query_by_string('university'))
 [[u'http://www.stanford.edu/', 0.10469570845856098],
  [u'http://www.ucla.edu', 0.04485065887313478],
  [u'http://www.berkeley.edu', 0.020464326883958977]]
@@ -136,11 +141,11 @@ class SimIndexService(object):
 class RequestHandler(SimpleRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-def start_sim_index_server(port):
+def start_sim_index_server(port, logRequests = True):
     server = SimpleRPCServer(('localhost', port),
-                                 logRequests = True,
-                                 requestHandler = RequestHandler)
-
+                             logRequests = logRequests,
+                             requestHandler = RequestHandler)
+    
     server.register_instance(SimIndexService())
 
     try:

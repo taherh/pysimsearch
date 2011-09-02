@@ -52,6 +52,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
 import abc
+# note: defaultdict's can't be marshalled for rpc
 from collections import defaultdict
 import cPickle as pickle
 import heapq
@@ -63,6 +64,7 @@ import sys
 import types
 
 import jsonrpclib as rpclib
+#import xmlrpclib as rpclib
 
 from . import doc_reader
 from . import query_scorer
@@ -86,7 +88,8 @@ class SimIndex(object):
     
     def __init__(self):
         self.config = {
-            'lowercase': True
+            'lowercase': True,
+            'stoplist': set()
         }
         self.query_scorer = None
 
@@ -165,7 +168,7 @@ class SimIndex(object):
         return
     
     def docids_with_terms(self, terms):
-        '''Returns a list of docids of docs containing terms'''
+        '''Returns a list of docids of docs containing all terms'''
         docs = None  # will hold a set of matching docids
         for term in terms:
             if docs is None:
@@ -175,6 +178,7 @@ class SimIndex(object):
                     (x[0] for x in self.postings_list(term)))
                 
         # return sorted list
+        if docs is None: docs = []
         return sorted(docs)
     
     def docnames_with_terms(self, *terms):
@@ -217,24 +221,27 @@ class SimpleMemorySimIndex(SimIndex):
         # index data
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
-        self.term_index = defaultdict(list)
+        self.term_index = {}
         self.docid_to_feature_map = {}  # document level features
         self.N = 0
 
         # additional stats used for scoring
-        self.df_map = defaultdict(int)
-        self.doc_len_map = defaultdict(int)
+        self.df_map = {}
+        self.doc_len_map = {}
         
         # these are global stats, which is present, are used instead
         # of the local stats above
         self.global_df_map = None
         self.global_N = None
+        
+        # set a default scorer
+        self.set_query_scorer('tfidf')
 
     def set_global_df_map(self, df_map):
-        self.global_df_map = defaultdict(int, df_map)
+        self.global_df_map = df_map
         
     def get_local_df_map(self):
-        return dict(self.df_map)
+        return self.df_map
     
     def get_df_map(self):
         return self.global_df_map or self.df_map
@@ -261,10 +268,12 @@ class SimpleMemorySimIndex(SimIndex):
                 docid = self.N
                 self.name_to_docid_map[name] = docid
                 self.docid_to_name_map[docid] = name
-                t_vec = doc_reader.term_vec(file)
+                t_vec = doc_reader.term_vec(file, self.config['stoplist'])
                 for term in t_vec:
+                    if term not in self.df_map: self.df_map[term] = 0
                     self.df_map[term] += 1
                 self._add_vec(docid, t_vec)
+                if docid not in self.doc_len_map: self.doc_len_map[docid] = 0
                 self.doc_len_map[docid] = term_vec.l2_norm(t_vec)
                 self.N += 1
 
@@ -273,6 +282,7 @@ class SimpleMemorySimIndex(SimIndex):
         for (term, freq) in term_vec.iteritems():
             if self.config['lowercase']:
                 term = term.lower()
+            if term not in self.term_index: self.term_index[term] = []
             self.term_index[term].append((docid, freq))
 
     def docid_to_name(self, docid):
@@ -287,7 +297,8 @@ class SimpleMemorySimIndex(SimIndex):
         '''
         if self.config['lowercase']:
             term = term.lower()
-        return self.term_index[term]
+
+        return self.term_index.get(term, [])
         
     def query(self, query_vec):
         '''Finds documents similar to query_vec
@@ -324,6 +335,7 @@ class SimpleMemorySimIndex(SimIndex):
         return pickle.load(file)
         
     
+
 class SimIndexCollection(SimIndex):
     '''
     Provides a ``SimIndex`` view over a sharded collection of SimIndexes
@@ -341,6 +353,9 @@ class SimIndexCollection(SimIndex):
     routed to all shards.  The two sharding approaches correspond to either
     partitioning the postings matrix by columns (doc-sharding),
     or rows (query-sharding).
+    
+    The shard-function is only used for ``index_*()`` operations.  If you
+    have a read-only collection, you don't need a sharding function.
     '''
     
     def __init__(self):
@@ -379,7 +394,7 @@ class SimIndexCollection(SimIndex):
         self.index_string_buffers(named_string_buffers)
         
         self.update_global_stats()
-        
+    
     def index_string_buffers(self, named_string_buffers):
         '''Routes index_string_buffers() call to appropriate shard.'''
         # minimize rpcs by collecting (name, buffer) tuples for
@@ -396,7 +411,7 @@ class SimIndexCollection(SimIndex):
             )
             
         self.update_global_stats()
-        
+    
     def index_urls(self, *urls):
         '''Index web pages given by urls
         
@@ -463,6 +478,8 @@ class SimIndexCollection(SimIndex):
         '''Issues query to collection and returns merged results
         
         TODO: use a merge alg. (heapq.merge doesn't have a key= arg yet)
+        TODO: add support for rank-aggregation in the case of heterogenous
+              collections where ir scores are not directly comparable
         '''
         results = []
         for shard in self.shards:
@@ -477,18 +494,18 @@ class SimIndexCollection(SimIndex):
         "brute-force"; incremental updating (in either direction)
         is not supported.
         '''
-        
+
         def merge_df_map(target, source):
             '''
             Helper function to merge df_maps.
-            Target must be a defaultdict(int)
             '''
             for (term, df) in source.items():
+                if term not in target: target[term] = 0
                 target[term] += df
 
         # Collect global stats
         global_N = 0
-        global_df_map = defaultdict(int)
+        global_df_map = {}
         name_to_docid_maps = {}
         for shard_id in range(len(self.shards)):
             shard = self.shards[shard_id]
@@ -499,7 +516,7 @@ class SimIndexCollection(SimIndex):
         # Broadcast global stats
         for shard in self.shards:
             shard.set_global_N(global_N)
-            shard.set_global_df_map(dict(global_df_map))
+            shard.set_global_df_map(global_df_map)
 
         # Update our name <-> global_docid mapping
         for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():

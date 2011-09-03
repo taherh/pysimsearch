@@ -100,6 +100,12 @@ class SimIndex(object):
             **config: config var assignments
         '''
         self.config.update(config)
+    
+    def load_stoplist(self, stopfile):
+        stoplist = set()
+        for line in stopfile:
+            stoplist.update(line.split())
+        self.update_config(stoplist=stoplist)
         
     def set_query_scorer(self, query_scorer):
         '''Set the query_scorer
@@ -216,7 +222,7 @@ class SimpleMemorySimIndex(SimIndex):
     '''
 
     def __init__(self):
-        super(SimpleMemorySimIndex, self).__init__();
+        super(SimpleMemorySimIndex, self).__init__()
         
         # index data
         self.name_to_docid_map = {}
@@ -263,19 +269,19 @@ class SimpleMemorySimIndex(SimIndex):
         Build a similarity index over collection given in named_files
         named_files is a list iterable of (filename, file) pairs
         '''
-        for (name, _file) in named_files:
-            with _file as file:
-                docid = self.N
-                self.name_to_docid_map[name] = docid
-                self.docid_to_name_map[docid] = name
+        for (name, file) in named_files:
+            with file:
                 t_vec = doc_reader.term_vec(file, self.config['stoplist'])
-                for term in t_vec:
-                    if term not in self.df_map: self.df_map[term] = 0
-                    self.df_map[term] += 1
-                self._add_vec(docid, t_vec)
-                if docid not in self.doc_len_map: self.doc_len_map[docid] = 0
-                self.doc_len_map[docid] = term_vec.l2_norm(t_vec)
-                self.N += 1
+            docid = self.N
+            self.name_to_docid_map[name] = docid
+            self.docid_to_name_map[docid] = name
+            for term in t_vec:
+                if term not in self.df_map: self.df_map[term] = 0
+                self.df_map[term] += 1
+            self._add_vec(docid, t_vec)
+            if docid not in self.doc_len_map: self.doc_len_map[docid] = 0
+            self.doc_len_map[docid] = term_vec.l2_norm(t_vec)
+            self.N += 1
 
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
@@ -359,11 +365,18 @@ class SimIndexCollection(SimIndex):
     '''
     
     def __init__(self):
-        super(SimIndex, self).__init__()
+        super(SimIndexCollection, self).__init__()
+        
         self.shards = []
         self.shard_func = self.default_shard_func
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
+
+    def update_config(self, **config):
+        super(SimIndexCollection, self).update_config(**config)
+        
+        for shard in self.shards:
+            shard.update_config(**config)
 
     def clear_shards(self):
         self.shards = []
@@ -440,7 +453,6 @@ class SimIndexCollection(SimIndex):
     @staticmethod
     def make_global_docid(shard_id, docid):
         return "{}-{}".format(shard_id, docid)
-            
     
     def docid_to_name(self, docid):
         '''Translates global docid to name'''
@@ -453,14 +465,15 @@ class SimIndexCollection(SimIndex):
     def postings_list(self, term):
         '''Returns aggregated postings list in terms of global docids'''
 
-        postings_lists = []
+        merged_postings_list = []
         for shard_id in range(len(self.shards)):
-            postings_lists.extend(
+            pprint(self.shards[shard_id].postings_list(term))
+            merged_postings_list.extend(
                  [(self.make_global_docid(shard_id, docid), freq) for
                   (docid, freq) in self.shards[shard_id].postings_list(term)]
                 )
         
-        return postings_lists
+        return merged_postings_list
     
     def set_query_scorer(self, query_scorer):
         '''Passes ``set_query_scorer()`` request to all shards.

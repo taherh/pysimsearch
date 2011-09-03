@@ -113,8 +113,6 @@ def sample_remote_indexes():
     
     pprint(remote_index_coll.query_by_string('stanford university'))
         
-    pprint('done!')
-        
     for process in processes:
         process.terminate()
 
@@ -123,4 +121,4 @@ if __name__ == '__main__':
     sample_sim_index()
     sample_sim_index_collection()
     sample_remote_indexes()
-    
+    pprint('done!')

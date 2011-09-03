@@ -35,7 +35,9 @@ from __future__ import(division, absolute_import, print_function,
 
 import codecs
 import io
+from itertools import izip as zip
 import re
+
 
 import httplib2
 import lxml.html
@@ -53,7 +55,8 @@ def get_text_file(name):
         html_tree = lxml.html.fromstring(content)
         clean_html(html_tree)  # removes crud from html
         clean_html_string = lxml.html.tostring(html_tree, 
-                                               encoding=unicode, method='text')
+                                               encoding=unicode,
+                                               method='text')
         file = io.StringIO(clean_html_string)
     else:
         file = codecs.open(name, encoding='utf-8')
@@ -74,21 +77,18 @@ def term_vec(file, stoplist = None):
     '''
     Returns a term vector for 'file', represented as a dictionary
     of the form {term: frequency}
-    
-    Takes ownership of file   
     '''
     # default args:
     if stoplist is None:
         stoplist = set()
     
-    with file as f:
-        tf_dict = {}
-        for line in f:
-            for term in line.split():
-                if term not in stoplist:
-                    if term not in tf_dict: tf_dict[term] = 0
-                    tf_dict[term] += 1
-        return tf_dict
+    tf_dict = {}
+    for line in file:
+        for term in line.split():
+            if term not in stoplist:
+                if term not in tf_dict: tf_dict[term] = 0
+                tf_dict[term] += 1
+    return tf_dict
     
 def term_vec_from_string(s):
     '''
@@ -97,5 +97,6 @@ def term_vec_from_string(s):
 
     (Convenience function - wraps term_vec())
     '''
-    return term_vec(io.StringIO(s))
+    with io.StringIO(s) as string_buffer:
+        return term_vec(string_buffer)
     

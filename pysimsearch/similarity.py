@@ -65,8 +65,6 @@ def measure_similarity(file_a, file_b, sim_func = None):
     similarity metric
     
     'sim_func' defaults to cosine_sim if not specified
-    
-    Consumes file_a and file_b
     '''
     if sim_func == None:
         sim_func = cosine_sim  # default to cosine_sim

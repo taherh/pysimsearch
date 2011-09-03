@@ -38,7 +38,7 @@ import unittest
 
 import io
 import math
-import pprint
+from pprint import pprint
 
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMemorySimIndex
@@ -51,17 +51,20 @@ class SimIndexTest(object):
     interface.
     
     To test a concrete implementation of SimIndex, must sublcass SimIndexTest,
-    and also inherit unittest.TestCase.  We intentionally do not inherit
-    unittest.TestCase for SimIndexTest, as SimIndex is only an abstract
-    class that cannot be instantiated.
+    and also inherit unittest.TestCase.  SimIndexTest intentionally does not
+    inherit unittest.TestCase, as it is only an abstract class that cannot be
+    instantiated and tested separately from an implementation.
     '''
     longMessage = True
 
     sim_index = None
 
+    # Stopword list
+    stopfile_buffer = "stopword1 stopword2"
+
     # Test documents
-    docs = [ ('doc1', "hello there world     hello"),
-             ('doc2', "hello       world          "),
+    docs = [ ('doc1', "hello there world     hello stopword1"),
+             ('doc2', "hello       world           stopword2"),
              ('doc3', "hello there       bob      ") ]
     
     # Postings that correspond to test documents
@@ -113,7 +116,7 @@ class SimIndexTest(object):
                "hello world": {'doc1': hello_idf * 2 / d1_len + world_idf / d1_len,
                                'doc2': hello_idf / d2_len + world_idf / d2_len,
                                'doc3': hello_idf / d3_len} })
-        pprint.pprint(r)
+        pprint(r)
         return r
     
     def test_docname_docid_translation(self):
@@ -139,6 +142,12 @@ class SimIndexTest(object):
                 }
             self.assertEqual(translated_postings,
                              self.golden_postings[term])
+
+    def test_stoplist(self):
+        '''Test stoplist functionality'''
+        for term in self.stopfile_buffer.split():
+            print("stopword={}".format(term))
+            self.assertEqual(list(self.sim_index.postings_list(term)), [])
 
     def test_docnames_with_terms(self):
         '''Test docnames_with_terms() using known data
@@ -187,11 +196,15 @@ class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
     
     Tests for api's not in parent class are tested separately here.  This is
     so we can reuse test code across all implementations of SimIndex.
-    
     '''
+    
     def setUp(self):
+        super(SimpleMemorySimIndexTest, self).setUp()
+        print("SimpleMemorySimIndexTest")
         self.sim_index = SimpleMemorySimIndex()
-
+        with io.StringIO(self.stopfile_buffer) as stopfile:
+            self.sim_index.load_stoplist(stopfile)
+        
         named_files = ((docname, io.StringIO(doc))
                             for (docname, doc) in self.docs)
         self.sim_index.index_files(named_files)
@@ -210,11 +223,23 @@ class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
 
 
 class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
+    '''
+    All tests hitting the SimIndex interface are in the parent class, SimIndexTest
+    
+    Tests for api's not in parent class are tested separately here.  This is
+    so we can reuse test code across all implementations of SimIndex.    
+    '''
+
     def setUp(self):
+        super(SimIndexCollectionTest, self).setUp()
+        print("SimIndexCollectionTest")
         self.sim_index = SimIndexCollection()
         for i in range(1):
             self.sim_index.add_shards(SimpleMemorySimIndex())
             
+        with io.StringIO(self.stopfile_buffer) as stopfile:
+            self.sim_index.load_stoplist(stopfile)
+
         named_files = ((docname, io.StringIO(doc))
                             for (docname, doc) in self.docs)
         self.sim_index.index_files(named_files)

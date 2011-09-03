@@ -128,7 +128,10 @@ class SimIndexService(object):
             
         func = getattr(self._sim_index, method_name)
         try:
-            r = func(*params)
+            if type(params) is types.ListType:
+                r = func(*params)
+            else:
+                r = func(**params)
             # if we got back a generator, then let's materialize a list so it
             # can serialize properly
             if isinstance(r, types.GeneratorType):

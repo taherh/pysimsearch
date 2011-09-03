@@ -38,12 +38,16 @@ import unittest
 
 import io
 import math
+import sys
+import time
+from multiprocessing import Process
 from pprint import pprint
 
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMemorySimIndex
 from pysimsearch.sim_index import SimIndexCollection
-from pysimsearch import query_scorer
+from pysimsearch.sim_index import RemoteSimIndex
+from pysimsearch import sim_server
 
 class SimIndexTest(object):
     '''
@@ -170,7 +174,7 @@ class SimIndexTest(object):
         
         Uses SimpleCountQueryScorer for scoring.
         '''
-        self.sim_index.set_query_scorer(query_scorer.SimpleCountQueryScorer())
+        self.sim_index.set_query_scorer('simple_count')
         for (query, golden_doc_hits) in self.golden_scored_hits.items():
             self.assertEqual(golden_doc_hits,
                              dict(self.sim_index.query_by_string(query)),
@@ -181,7 +185,7 @@ class SimIndexTest(object):
         
         Uses TFIDFQueryScorer for scoring.
         '''
-        self.sim_index.set_query_scorer(query_scorer.TFIDFQueryScorer())
+        self.sim_index.set_query_scorer('tfidf')
         for (query, golden_doc_hits_cos) in self.get_golden_hits_cos().items():
             results = self.sim_index.query_by_string(query)
             for (docname, score) in results:
@@ -234,7 +238,7 @@ class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
         super(SimIndexCollectionTest, self).setUp()
         print("SimIndexCollectionTest")
         self.sim_index = SimIndexCollection()
-        for i in range(1):
+        for i in range(2):
             self.sim_index.add_shards(SimpleMemorySimIndex())
             
         with io.StringIO(self.stopfile_buffer) as stopfile:
@@ -246,7 +250,58 @@ class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
     
     def tearDown(self):
         pass
+
+
+class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
+    '''
+    All tests hitting the SimIndex interface are in the parent class, SimIndexTest
+    
+    Tests for api's not in parent class are tested separately here.  This is
+    so we can reuse test code across all implementations of SimIndex.    
+    '''
+
+    processes = None
+    
+    def setUp(self):
+        # setUpClass() may be more efficient for spinning up the servers,
+        # but this way is more robust (since we'll start each test from a
+        # clean slate). Otherwise we'd need clear() functionality added.
+
+        super(SimIndexRemoteCollectionTest, self).setUp()
+        print("SimIndexRemoteCollectionTest")
         
+        self.sim_index = SimIndexCollection()
+        
+        self.processes = []
+        for i in range(2):
+            port = 9100 + i
+            process = Process(target=sim_server.start_sim_index_server,
+                              kwargs={'port': port, 'logRequests': False})
+            process.daemon = True
+            self.processes.append(process)
+            
+        for process in self.processes:
+            process.start()
+            
+        print("Waiting for servers to start")
+        time.sleep(0.01)
+    
+        for i in range(2):
+            port = 9100 + i
+            self.sim_index.add_shards(
+                RemoteSimIndex("http://localhost:{}/RPC2".format(port)))
+            
+        with io.StringIO(self.stopfile_buffer) as stopfile:
+            self.sim_index.load_stoplist(stopfile)
+
+        named_files = ((docname, io.StringIO(doc))
+                            for (docname, doc) in self.docs)
+        self.sim_index.index_files(named_files)
+    
+    def tearDown(self):
+        for process in self.processes:
+            process.terminate()
+
 
 if __name__ == "__main__":
     unittest.main()

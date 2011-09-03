@@ -89,7 +89,7 @@ class SimIndex(object):
     def __init__(self):
         self.config = {
             'lowercase': True,
-            'stoplist': set()
+            'stoplist': {}  # using dict instead of set, for rpc support
         }
         self.query_scorer = None
 
@@ -102,9 +102,9 @@ class SimIndex(object):
         self.config.update(config)
     
     def load_stoplist(self, stopfile):
-        stoplist = set()
+        stoplist = {}
         for line in stopfile:
-            stoplist.update(line.split())
+            stoplist.update(zip(line.split(), itertools.repeat(1)))
         self.update_config(stoplist=stoplist)
         
     def set_query_scorer(self, query_scorer):

@@ -96,13 +96,13 @@ def sample_remote_indexes():
         process.start()
         
     print("Waiting for servers to start")
-    time.sleep(3)
+    time.sleep(1)
 
     remote_index_coll = SimIndexCollection()        
     for i in range(2):
         port = 9000 + i
-        remote_index = RemoteSimIndex("http://localhost:{}/RPC2".format(port))
-        remote_index_coll.add_shards(remote_index)
+        remote_index_coll.add_shards(
+            RemoteSimIndex("http://localhost:{}/RPC2".format(port)))
         
     remote_index_coll.set_query_scorer('tfidf')
 

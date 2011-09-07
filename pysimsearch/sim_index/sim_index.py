@@ -85,6 +85,8 @@ class SimIndex(object):
             'stoplist': {}  # using dict instead of set, for rpc support
         }
         self.query_scorer = None
+        self._N = 0
+        self._global_N = None
 
     def config(self, key):
         return self._config[key]
@@ -100,6 +102,29 @@ class SimIndex(object):
         for line in stopfile:
             stoplist.update(zip(line.split(), itertools.repeat(1)))
         self.update_config(stoplist=stoplist)
+
+    @abc.abstractmethod
+    def set_global_df_map(self, df_map):
+        '''Set global df stats'''
+        return
+    
+    @abc.abstractmethod
+    def get_local_df_map(self):
+        '''Get local df stats'''
+        return
+    
+    @abc.abstractmethod
+    def get_name_to_docid_map(self):
+        '''Return local mapping of name to docids'''
+        return
+
+    def set_global_N(self, N):
+        '''Set global number of documents'''
+        self._global_N = N
+    
+    def get_local_N(self):
+        '''Return local number of documents'''
+        return self._N
         
     def set_query_scorer(self, query_scorer):
         '''Set the query_scorer

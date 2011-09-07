@@ -85,37 +85,47 @@ class SimIndexCollection(SimIndex):
     def __init__(self):
         super(SimIndexCollection, self).__init__()
 
-        self.shards = []
+        self._shards = []
         self.shard_func = self.default_shard_func
-        self.name_to_docid_map = {}
-        self.docid_to_name_map = {}
+        self._name_to_docid_map = {}
+        self._docid_to_name_map = {}
 
     def set_config(self, key, value):
         '''Update config var for shards'''
         super(SimIndexCollection, self).set_config(key, value)
-        for shard in self.shards:
+        for shard in self._shards:
             shard.set_config(key, value)
             
     def update_config(self, **d):
         '''Update config for shards'''
         super(SimIndexCollection, self).update_config(**d)
-        for shard in self.shards:
+        for shard in self._shards:
             shard.update_config(**d)
 
     def clear_shards(self):
-        self.shards = []
+        self._shards = []
         
     def add_shards(self, *sim_index_shards):
         for shard in sim_index_shards:
             shard.update_config(**self._config)
-        self.shards.extend(sim_index_shards)
+        self._shards.extend(sim_index_shards)
         
     def default_shard_func(self, shard_key):
         '''implements the default sharding function'''
-        return hash(shard_key) % len(self.shards)
+        return hash(shard_key) % len(self._shards)
         
     def set_shard_func(self, func):
-        self.shard_func = func
+        self._shard_func = func
+
+    def set_global_df_map(self, df_map):
+        for shard in sim_index_shards:
+            shard.set_global_df_map(df_map)
+        
+    def get_local_df_map(self):
+        return self._df_map
+    
+    def get_name_to_docid_map(self):
+        return self._name_to_docid_map
 
     def index_files(self, named_files):
         '''
@@ -145,7 +155,7 @@ class SimIndexCollection(SimIndex):
         # issue an indexing rpc to each sharded backend that has some input
         # TODO: use non-blocking rpc's
         for shard_id in sharded_input_map:
-            self.shards[shard_id].index_string_buffers(
+            self._shards[shard_id].index_string_buffers(
                 sharded_input_map[shard_id]
             )
             
@@ -170,7 +180,7 @@ class SimIndexCollection(SimIndex):
         # issue an indexing call to each sharded backend that has some input
         # TODO: use non-blocking rpc's
         for shard_id in sharded_input_map:
-            self.shards[shard_id].index_filenames(
+            self._shards[shard_id].index_filenames(
                 *sharded_input_map[shard_id]
             )
             
@@ -182,20 +192,20 @@ class SimIndexCollection(SimIndex):
     
     def docid_to_name(self, docid):
         '''Translates global docid to name'''
-        return self.docid_to_name_map[docid]
+        return self._docid_to_name_map[docid]
     
     def name_to_docid(self, name):
         '''Translates name to global docid'''
-        return self.name_to_docid_map[name]
+        return self._name_to_docid_map[name]
     
     def postings_list(self, term):
         '''Returns aggregated postings list in terms of global docids'''
 
         merged_postings_list = []
-        for shard_id in range(len(self.shards)):
+        for shard_id in range(len(self._shards)):
             merged_postings_list.extend(
                  [(self.make_global_docid(shard_id, docid), freq) for
-                  (docid, freq) in self.shards[shard_id].postings_list(term)]
+                  (docid, freq) in self._shards[shard_id].postings_list(term)]
                 )
         
         return merged_postings_list
@@ -209,7 +219,7 @@ class SimIndexCollection(SimIndex):
                           a scorer object (which we currently don't serialize
                           for rpcs)
         '''
-        for shard in self.shards:
+        for shard in self._shards:
             shard.set_query_scorer(query_scorer)
             
     def query(self, query_vec):
@@ -220,7 +230,7 @@ class SimIndexCollection(SimIndex):
               collections where ir scores are not directly comparable
         '''
         results = []
-        for shard in self.shards:
+        for shard in self._shards:
             results.extend(shard.query(query_vec))
         results.sort(key=operator.itemgetter(1), reverse=True)
         return results
@@ -245,14 +255,14 @@ class SimIndexCollection(SimIndex):
         global_N = 0
         global_df_map = {}
         name_to_docid_maps = {}
-        for shard_id in range(len(self.shards)):
-            shard = self.shards[shard_id]
+        for shard_id in range(len(self._shards)):
+            shard = self._shards[shard_id]
             global_N += shard.get_local_N()
             merge_df_map(global_df_map, shard.get_local_df_map())
             name_to_docid_maps[shard_id] = shard.get_name_to_docid_map()
             
         # Broadcast global stats
-        for shard in self.shards:
+        for shard in self._shards:
             shard.set_global_N(global_N)
             shard.set_global_df_map(global_df_map)
 
@@ -260,5 +270,5 @@ class SimIndexCollection(SimIndex):
         for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():
             for (name, docid) in name_to_docid_map.iteritems():
                 gdocid = self.make_global_docid(shard_id, docid)
-                self.name_to_docid_map[name] = gdocid
-                self.docid_to_name_map[gdocid] = name
+                self._name_to_docid_map[name] = gdocid
+                self._docid_to_name_map[gdocid] = name

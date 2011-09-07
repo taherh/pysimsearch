@@ -28,36 +28,32 @@
 
 
 '''
-Similarity index module.
+RemoteSimIndex module.
 
 Sample usage::
 
-    from pysimsearch.sim_index import SimpleMemorySimIndex
-    from pysimsearch import doc_reader
+**Server**
+::
 
-    sim_index = SimpleMemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
-    print(sim_index.postings_list('university'))
-    print(list(sim_index.docnames_with_terms('university', 'california')))
-    
-    sim_index.set_query_scorer('simple_count')
-    print(list(sim_index.query_by_string("stanford university")))
+    bash$ pysimsearch/sim_server.py sim_index -p 9001
+    Use Control-C to exit
+
+
+** pysimsearch Client **
+
+>>> from pprint import pprint
+>>> from pysimsearch import sim_index
+>>> index = sim_index.RemoteSimIndex('http://localhost:9001/RPC2')
+>>> index.index_filenames('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
+>>> pprint(index.query_by_string('university'))
+[[u'http://www.stanford.edu/', 0.10469570845856098],
+ [u'http://www.ucla.edu', 0.04485065887313478],
+ [u'http://www.berkeley.edu', 0.020464326883958977]]
 
 '''
 
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
-
-import abc
-import io
-import itertools
-import operator
-from pprint import pprint
-import sys
-import types
 
 import jsonrpclib as rpclib
 #import xmlrpclib as rpclib

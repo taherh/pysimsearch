@@ -9,9 +9,7 @@ from pprint import pprint
 from pysimsearch.sim_index import SimpleMemorySimIndex
 from pysimsearch.sim_index import RemoteSimIndex
 from pysimsearch.sim_index import SimIndexCollection
-from pysimsearch import doc_reader
 from pysimsearch import similarity
-from pysimsearch import query_scorer
 from pysimsearch import sim_server
 
 def sample_similarity():

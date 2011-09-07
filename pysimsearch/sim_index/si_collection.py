@@ -32,19 +32,19 @@ Similarity index module.
 
 Sample usage::
 
-    from pysimsearch.sim_index import SimpleMemorySimIndex
-    from pysimsearch import doc_reader
+    from pprint import pprint
+    from pysimsearch.sim_index import SimpleMemorySimIndex, SimIndexCollection
 
-    sim_index = SimpleMemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
-    print(sim_index.postings_list('university'))
-    print(list(sim_index.docnames_with_terms('university', 'california')))
+    indexes = (SimpleMemorySimIndex(), SimpleMemorySimIndex())
+    index_coll = SimIndexCollection()
+    index_coll.add_shards(*indexes)
+    index_coll.set_query_scorer('tfidf')
+    index_coll.index_urls('http://www.stanford.edu/',
+                          'http://www.berkeley.edu',
+                          'http://www.ucla.edu',
+                          'http://www.mit.edu')
     
-    sim_index.set_query_scorer('simple_count')
-    print(list(sim_index.query_by_string("stanford university")))
+    pprint(index_coll.query_by_string('stanford university'))
 
 '''
 
@@ -53,9 +53,6 @@ from __future__ import (division, absolute_import, print_function,
 
 from collections import defaultdict
 import operator
-
-import jsonrpclib as rpclib
-#import xmlrpclib as rpclib
 
 from .sim_index import SimIndex
 from ..exceptions import *

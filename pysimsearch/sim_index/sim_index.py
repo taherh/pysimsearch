@@ -28,23 +28,9 @@
 
 
 '''
-Similarity index module.
+SimIndex module.
 
-Sample usage::
-
-    from pysimsearch.sim_index import SimpleMemorySimIndex
-    from pysimsearch import doc_reader
-
-    sim_index = SimpleMemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
-    print(sim_index.postings_list('university'))
-    print(list(sim_index.docnames_with_terms('university', 'california')))
-    
-    sim_index.set_query_scorer('simple_count')
-    print(list(sim_index.query_by_string("stanford university")))
+See ``si_simple_memory.py`` for sample usage
 
 '''
 
@@ -52,14 +38,8 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
 import abc
-# note: defaultdict's can't be marshalled for rpc
-from collections import defaultdict
-import cPickle as pickle
 import io
 import itertools
-
-import jsonrpclib as rpclib
-#import xmlrpclib as rpclib
 
 from .. import doc_reader
 from ..exceptions import *

@@ -32,6 +32,7 @@ Similarity index module.
 
 Sample usage::
 
+    from pprint import pprint
     from pysimsearch.sim_index import SimpleMemorySimIndex
     from pysimsearch import doc_reader
 
@@ -40,11 +41,11 @@ Sample usage::
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',
                               'http://www.mit.edu')
-    print(sim_index.postings_list('university'))
-    print(list(sim_index.docnames_with_terms('university', 'california')))
+    pprint(sim_index.postings_list('university'))
+    pprint(list(sim_index.docnames_with_terms('university', 'california')))
     
     sim_index.set_query_scorer('simple_count')
-    print(list(sim_index.query_by_string("stanford university")))
+    pprint(list(sim_index.query_by_string("stanford university")))
 
 '''
 
@@ -52,9 +53,6 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
 import cPickle as pickle
-
-import jsonrpclib as rpclib
-#import xmlrpclib as rpclib
 
 from .sim_index import SimIndex
 from .. import doc_reader

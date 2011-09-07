@@ -87,20 +87,21 @@ class SimIndex(object):
     __metaclass__ = abc.ABCMeta
     
     def __init__(self):
-        self.config = {
+        self._config = {
             'lowercase': True,
             'stoplist': {}  # using dict instead of set, for rpc support
         }
         self.query_scorer = None
 
-    def update_config(self, **config):
-        '''Update configuration variables
+    def config(self, key):
+        return self._config[key]
+
+    def set_config(self, key, value):
+        self._config[key] = value
+
+    def update_config(self, **d):
+        self._config.update(d)
         
-        Params:
-            **config: config var assignments
-        '''
-        self.config.update(config)
-    
     def load_stoplist(self, stopfile):
         stoplist = {}
         for line in stopfile:
@@ -223,7 +224,7 @@ class SimpleMemorySimIndex(SimIndex):
 
     def __init__(self):
         super(SimpleMemorySimIndex, self).__init__()
-        
+
         # index data
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
@@ -271,7 +272,7 @@ class SimpleMemorySimIndex(SimIndex):
         '''
         for (name, file) in named_files:
             with file:
-                t_vec = doc_reader.term_vec(file, self.config['stoplist'])
+                t_vec = doc_reader.term_vec(file, self.config('stoplist'))
             docid = self.N
             self.name_to_docid_map[name] = docid
             self.docid_to_name_map[docid] = name
@@ -286,7 +287,7 @@ class SimpleMemorySimIndex(SimIndex):
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
         for (term, freq) in term_vec.iteritems():
-            if self.config['lowercase']:
+            if self.config('lowercase'):
                 term = term.lower()
             if term not in self.term_index: self.term_index[term] = []
             self.term_index[term].append((docid, freq))
@@ -301,7 +302,7 @@ class SimpleMemorySimIndex(SimIndex):
         '''
         Returns list of (docid, freq) tuples for documents containing term
         '''
-        if self.config['lowercase']:
+        if self.config('lowercase'):
             term = term.lower()
 
         return self.term_index.get(term, [])
@@ -366,22 +367,30 @@ class SimIndexCollection(SimIndex):
     
     def __init__(self):
         super(SimIndexCollection, self).__init__()
-        
+
         self.shards = []
         self.shard_func = self.default_shard_func
         self.name_to_docid_map = {}
         self.docid_to_name_map = {}
 
-    def update_config(self, **config):
-        super(SimIndexCollection, self).update_config(**config)
-        
+    def set_config(self, key, value):
+        '''Update config var for shards'''
+        super(SimIndexCollection, self).set_config(key, value)
         for shard in self.shards:
-            shard.update_config(**config)
+            shard.set_config(key, value)
+            
+    def update_config(self, **d):
+        '''Update config for shards'''
+        super(SimIndexCollection, self).update_config(**d)
+        for shard in self.shards:
+            shard.update_config(**d)
 
     def clear_shards(self):
         self.shards = []
         
     def add_shards(self, *sim_index_shards):
+        for shard in sim_index_shards:
+            shard.update_config(**self._config)
         self.shards.extend(sim_index_shards)
         
     def default_shard_func(self, shard_key):

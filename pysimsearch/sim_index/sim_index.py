@@ -81,7 +81,7 @@ class SimIndex(object):
         stoplist = {}
         for line in stopfile:
             stoplist.update(zip(line.split(), itertools.repeat(1)))
-        self.update_config(stoplist=stoplist)
+        self.set_config('stoplist', stoplist)
 
     @abc.abstractmethod
     def set_global_df_map(self, df_map):

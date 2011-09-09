@@ -79,25 +79,32 @@ class SimIndexCollection(SimIndex):
     have a read-only collection, you don't need a sharding function.
     '''
     
-    def __init__(self):
+    def __init__(self, root=True):
         super(SimIndexCollection, self).__init__()
 
         self._shards = []
         self.shard_func = self.default_shard_func
         self._name_to_docid_map = {}
         self._docid_to_name_map = {}
+        self._df_map = {}
+        
+        self._dirty = False
+        
+        self.set_config('root', root, passthrough=False)
 
-    def set_config(self, key, value):
+    def set_config(self, key, value, passthrough=True):
         '''Update config var for shards'''
         super(SimIndexCollection, self).set_config(key, value)
-        for shard in self._shards:
-            shard.set_config(key, value)
+        if passthrough:
+            for shard in self._shards:
+                shard.set_config(key, value)
             
-    def update_config(self, **d):
+    def update_config(self, passthrough=True, **d):
         '''Update config for shards'''
         super(SimIndexCollection, self).update_config(**d)
-        for shard in self._shards:
-            shard.update_config(**d)
+        if passthrough:
+            for shard in self._shards:
+                shard.update_config(**d)
 
     def clear_shards(self):
         self._shards = []
@@ -124,6 +131,22 @@ class SimIndexCollection(SimIndex):
     def get_name_to_docid_map(self):
         return self._name_to_docid_map
 
+    def update_trigger(method):
+        '''
+        Decorator for methods that update the index.  Used as a post-update
+        trigger that gathers new term stats, and propagates them back down (if
+        we're the root node)
+        '''
+        def wrapper(self, *args, **kwargs):
+            self._dirty = True
+            val = method(self, *args, **kwargs)
+            if self._dirty:
+                self.update_trigger_helper()
+                self._dirty = False
+        
+        return wrapper
+
+    @update_trigger
     def index_files(self, named_files):
         '''
         Translate to index_string_buffers() call, since file objects
@@ -138,9 +161,8 @@ class SimIndexCollection(SimIndex):
         named_string_buffers = [(name, file.read())
             for (name, file) in named_files]
         self.index_string_buffers(named_string_buffers)
-        
-        self.update_global_stats()
-    
+
+    @update_trigger
     def index_string_buffers(self, named_string_buffers):
         '''Routes index_string_buffers() call to appropriate shard.'''
         # minimize rpcs by collecting (name, buffer) tuples for
@@ -155,9 +177,8 @@ class SimIndexCollection(SimIndex):
             self._shards[shard_id].index_string_buffers(
                 sharded_input_map[shard_id]
             )
-            
-        self.update_global_stats()
-    
+
+    @update_trigger
     def index_urls(self, *urls):
         '''Index web pages given by urls
         
@@ -180,8 +201,6 @@ class SimIndexCollection(SimIndex):
             self._shards[shard_id].index_filenames(
                 *sharded_input_map[shard_id]
             )
-            
-        self.update_global_stats()
 
     @staticmethod
     def make_global_docid(shard_id, docid):
@@ -232,7 +251,16 @@ class SimIndexCollection(SimIndex):
         results.sort(key=operator.itemgetter(1), reverse=True)
         return results
 
-    def update_global_stats(self):
+    def update_trigger_helper(self):
+        self.update_node_stats()
+
+        # If we're the root of the collection, then propogate back node
+        # stats (which are global stats) to children.  Else some ancestor
+        # node will have that responsibility.
+        if self.config('root'):
+            self.broadcast_node_stats()
+
+    def update_node_stats(self):
         '''
         Fetches local stats from all shards, aggregates them, and
         rebroadcasts global stats back to shards.  Currently uses
@@ -249,19 +277,14 @@ class SimIndexCollection(SimIndex):
                 target[term] += df
 
         # Collect global stats
-        global_N = 0
-        global_df_map = {}
+        self._N = 0
+        self._df_map = {}
         name_to_docid_maps = {}
         for shard_id in range(len(self._shards)):
             shard = self._shards[shard_id]
-            global_N += shard.get_local_N()
-            merge_df_map(global_df_map, shard.get_local_df_map())
+            self._N += shard.get_local_N()
+            merge_df_map(self._df_map, shard.get_local_df_map())
             name_to_docid_maps[shard_id] = shard.get_name_to_docid_map()
-            
-        # Broadcast global stats
-        for shard in self._shards:
-            shard.set_global_N(global_N)
-            shard.set_global_df_map(global_df_map)
 
         # Update our name <-> global_docid mapping
         for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():
@@ -269,3 +292,10 @@ class SimIndexCollection(SimIndex):
                 gdocid = self.make_global_docid(shard_id, docid)
                 self._name_to_docid_map[name] = gdocid
                 self._docid_to_name_map[gdocid] = name
+        
+    def broadcast_node_stats(self):  
+        # Broadcast global stats.  Only called by collection root node.
+        for shard in self._shards:
+            shard.set_global_N(self._N)
+            shard.set_global_df_map(self._df_map)
+

@@ -28,7 +28,7 @@
 
 
 '''
-Similarity index module.
+SimpleMemorySimIndex module
 
 Sample usage::
 
@@ -80,8 +80,8 @@ class SimpleMemorySimIndex(SimIndex):
         self._df_map = {}
         self._doc_len_map = {}
         
-        # these are global stats, which is present, are used instead
-        # of the local stats above
+        # global stats, which if present, are used instead
+        # of the local stats
         self._global_df_map = None
         
         # set a default scorer
@@ -96,6 +96,13 @@ class SimpleMemorySimIndex(SimIndex):
     def get_name_to_docid_map(self):
         return self._name_to_docid_map
     
+    def get_doc_freq(self, term):
+        df_map = self._global_df_map or self._df_map
+        return df_map.get(term, 1)
+        
+    def get_doc_len(self, docid):
+        return self._doc_len_map.get(docid, 0)
+        
     def index_files(self, named_files):
         '''
         Build a similarity index over collection given in named_files
@@ -108,10 +115,11 @@ class SimpleMemorySimIndex(SimIndex):
             self._name_to_docid_map[name] = docid
             self._docid_to_name_map[docid] = name
             for term in t_vec:
+                if self.config('lowercase'):
+                    term = term.lower()
                 if term not in self._df_map: self._df_map[term] = 0
                 self._df_map[term] += 1
             self._add_vec(docid, t_vec)
-            if docid not in self._doc_len_map: self._doc_len_map[docid] = 0
             self._doc_len_map[docid] = term_vec.l2_norm(t_vec)
             self._N += 1
 
@@ -148,16 +156,18 @@ class SimpleMemorySimIndex(SimIndex):
             A iterable of (docname, score) tuples sorted by score
         '''
         
-        postings_lists = [(term, self.postings_list(term))
-            for term in query_vec]
+        postings_lists = []
+        for term in query_vec:
+            if self.config('lowercase'): term = term.lower()
+            postings_lists.append((term, self.postings_list(term)))
+
         
         N = self._global_N or self._N
-        df_map = self._global_df_map or self._df_map
         hits = self.query_scorer.score_docs(query_vec=query_vec,
                                             postings_lists=postings_lists,
                                             N=N,
-                                            df_map=df_map,
-                                            doc_len_map=self._doc_len_map)
+                                            get_doc_freq=self.get_doc_freq,
+                                            get_doc_len=self.get_doc_len)
         
         return ((self.docid_to_name(docid), score) for (docid, score) in hits)
         

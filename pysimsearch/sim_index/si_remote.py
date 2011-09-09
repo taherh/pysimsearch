@@ -28,7 +28,7 @@
 
 
 '''
-RemoteSimIndex module.
+RemoteSimIndex module
 
 Sample usage::
 

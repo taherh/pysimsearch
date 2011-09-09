@@ -284,7 +284,7 @@ class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
             process.start()
             
         print("Waiting for servers to start")
-        time.sleep(0.01)
+        time.sleep(0.05)
     
         for i in range(2):
             port = 9100 + i

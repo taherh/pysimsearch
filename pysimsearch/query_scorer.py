@@ -139,7 +139,7 @@ class TFIDFQueryScorer(QueryScorer):
         
         self.idf_weight = self.idf_weight_log
         
-    def score_docs(self, query_vec, postings_lists, N, df_map, doc_len_map, **extra):
+    def score_docs(self, query_vec, postings_lists, N, get_doc_freq, get_doc_len, **extra):
         '''
         Scores documents' similarities to query using cosine similarity
         in a vector space model.  Uses tf.idf weighting.
@@ -154,14 +154,14 @@ class TFIDFQueryScorer(QueryScorer):
         if N == 0: return ()
         doc_hit_map = defaultdict(int)
         for (term, postings_list) in postings_lists:
-            idf = self.idf_weight(N, df_map.get(term, 1))
+            idf = self.idf_weight(N, get_doc_freq(term))
             query_term_wt = self.tf_weight(query_vec[term]) * idf
             for (docid, freq) in postings_list:
                 doc_hit_map[docid] += self.tf_weight(freq) * query_term_wt
         
         for (docid, weight) in doc_hit_map.iteritems():
-            assert(doc_len_map[docid] > 0)
-            doc_hit_map[docid] = weight / doc_len_map[docid]
+            doc_len = get_doc_len(docid)
+            doc_hit_map[docid] = weight / doc_len
             
         # construct list of tuples sorted by value
         return sorted(doc_hit_map.iteritems(),

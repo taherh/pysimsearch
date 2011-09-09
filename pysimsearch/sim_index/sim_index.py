@@ -28,7 +28,7 @@
 
 
 '''
-SimIndex module.
+SimIndex module
 
 See ``si_simple_memory.py`` for sample usage
 

@@ -28,7 +28,7 @@
 
 
 '''
-Similarity index module.
+SimIndexCollection module
 
 Sample usage::
 

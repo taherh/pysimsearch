@@ -63,6 +63,16 @@ class SimIndexTest(object):
 
     sim_index = None
 
+    def setUp(self):
+        with io.StringIO(self.stopfile_buffer) as stopfile:
+            self.sim_index.load_stoplist(stopfile)
+        
+        named_files = ((docname, io.StringIO(doc))
+                            for (docname, doc) in self.docs)
+        self.sim_index.index_files(named_files)
+    
+
+
     # Stopword list
     stopfile_buffer = "stopword1 stopword2"
 
@@ -203,16 +213,10 @@ class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
     '''
     
     def setUp(self):
-        super(SimpleMemorySimIndexTest, self).setUp()
         print("SimpleMemorySimIndexTest")
         self.sim_index = SimpleMemorySimIndex()
-        with io.StringIO(self.stopfile_buffer) as stopfile:
-            self.sim_index.load_stoplist(stopfile)
-        
-        named_files = ((docname, io.StringIO(doc))
-                            for (docname, doc) in self.docs)
-        self.sim_index.index_files(named_files)
-    
+        super(SimpleMemorySimIndexTest, self).setUp()
+
     def tearDown(self):
         pass
         
@@ -235,18 +239,12 @@ class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
     '''
 
     def setUp(self):
-        super(SimIndexCollectionTest, self).setUp()
         print("SimIndexCollectionTest")
         self.sim_index = SimIndexCollection()
         for i in range(2):
             self.sim_index.add_shards(SimpleMemorySimIndex())
-            
-        with io.StringIO(self.stopfile_buffer) as stopfile:
-            self.sim_index.load_stoplist(stopfile)
 
-        named_files = ((docname, io.StringIO(doc))
-                            for (docname, doc) in self.docs)
-        self.sim_index.index_files(named_files)
+        super(SimIndexCollectionTest, self).setUp()
     
     def tearDown(self):
         pass
@@ -267,13 +265,19 @@ class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
         # but this way is more robust (since we'll start each test from a
         # clean slate). Otherwise we'd need clear() functionality added.
 
-        super(SimIndexRemoteCollectionTest, self).setUp()
         print("SimIndexRemoteCollectionTest")
         
         self.sim_index = SimIndexCollection()
         
+        # We will create a collection tree of the form:
+        #
+        #      Root
+        #     /   \
+        #    A     B
+        #   /\     /\
+        #  1  2   3  4
         self.processes = []
-        for i in range(2):
+        for i in range(4):
             port = 9100 + i
             process = Process(target=sim_server.start_sim_index_server,
                               kwargs={'port': port, 'logRequests': False})
@@ -284,23 +288,21 @@ class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
             process.start()
             
         print("Waiting for servers to start")
-        time.sleep(0.05)
-    
-        for i in range(2):
-            port = 9100 + i
-            self.sim_index.add_shards(
-                RemoteSimIndex("http://localhost:{}/RPC2".format(port)))
-            
-        with io.StringIO(self.stopfile_buffer) as stopfile:
-            self.sim_index.load_stoplist(stopfile)
+        time.sleep(0.1)
 
-        named_files = ((docname, io.StringIO(doc))
-                            for (docname, doc) in self.docs)
-        self.sim_index.index_files(named_files)
+        sim_index_nodes = (SimIndexCollection(), SimIndexCollection())  # (A, B)
+        for i in range(4):
+            port = 9100 + i
+            sim_index_nodes[i//2].add_shards(
+                RemoteSimIndex("http://localhost:{}/RPC2".format(port)))
+
+        self.sim_index.add_shards(*sim_index_nodes)
+        super(SimIndexRemoteCollectionTest, self).setUp()
     
     def tearDown(self):
         for process in self.processes:
             process.terminate()
+        time.sleep(0.1)
 
 
 if __name__ == "__main__":

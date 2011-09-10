@@ -121,8 +121,12 @@ class SimIndexCollection(SimIndex):
     def set_shard_func(self, func):
         self._shard_func = func
 
+    def set_global_N(self, N):
+        for shard in self._shards:
+            shard.set_global_N(N)
+
     def set_global_df_map(self, df_map):
-        for shard in sim_index_shards:
+        for shard in self._shards:
             shard.set_global_df_map(df_map)
         
     def get_local_df_map(self):

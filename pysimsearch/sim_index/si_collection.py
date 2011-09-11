@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright (c) 2011, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
@@ -33,9 +33,9 @@ SimIndexCollection module
 Sample usage::
 
     from pprint import pprint
-    from pysimsearch.sim_index import SimpleMemorySimIndex, SimIndexCollection
+    from pysimsearch.sim_index import SimpleMapSimIndex, SimIndexCollection
 
-    indexes = (SimpleMemorySimIndex(), SimpleMemorySimIndex())
+    indexes = (SimpleMapSimIndex(), SimpleMapSimIndex())
     index_coll = SimIndexCollection()
     index_coll.add_shards(*indexes)
     index_coll.set_query_scorer('tfidf')
@@ -53,6 +53,7 @@ from __future__ import (division, absolute_import, print_function,
 
 from collections import defaultdict
 import operator
+import os
 
 from .sim_index import SimIndex
 from ..exceptions import *
@@ -113,10 +114,13 @@ class SimIndexCollection(SimIndex):
         for shard in sim_index_shards:
             shard.update_config(**self._config)
         self._shards.extend(sim_index_shards)
-        
+    
+    _salt = None
     def default_shard_func(self, shard_key):
         '''implements the default sharding function'''
-        return hash(shard_key) % len(self._shards)
+        if self._salt is None:
+            self._salt = os.urandom(4)
+        return hash(str(shard_key)+self._salt) % len(self._shards)
         
     def set_shard_func(self, func):
         self._shard_func = func
@@ -207,7 +211,7 @@ class SimIndexCollection(SimIndex):
             )
 
     @staticmethod
-    def make_global_docid(shard_id, docid):
+    def make_node_docid(shard_id, docid):
         return "{}-{}".format(shard_id, docid)
     
     def docid_to_name(self, docid):
@@ -224,7 +228,7 @@ class SimIndexCollection(SimIndex):
         merged_postings_list = []
         for shard_id in range(len(self._shards)):
             merged_postings_list.extend(
-                 [(self.make_global_docid(shard_id, docid), freq) for
+                 [(self.make_node_docid(shard_id, docid), freq) for
                   (docid, freq) in self._shards[shard_id].postings_list(term)]
                 )
         
@@ -290,10 +294,10 @@ class SimIndexCollection(SimIndex):
             merge_df_map(self._df_map, shard.get_local_df_map())
             name_to_docid_maps[shard_id] = shard.get_name_to_docid_map()
 
-        # Update our name <-> global_docid mapping
+        # Update our name <-> node_docid mapping
         for (shard_id, name_to_docid_map) in name_to_docid_maps.iteritems():
             for (name, docid) in name_to_docid_map.iteritems():
-                gdocid = self.make_global_docid(shard_id, docid)
+                gdocid = self.make_node_docid(shard_id, docid)
                 self._name_to_docid_map[name] = gdocid
                 self._docid_to_name_map[gdocid] = name
         

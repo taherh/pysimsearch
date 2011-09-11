@@ -36,7 +36,7 @@ Quickstart:
 
 >>> from pprint import pprint
 >>> from pysimsearch import sim_index, doc_reader
->>> index = sim_index.SimpleMemorySimIndex()
+>>> index = sim_index.SimpleMapSimIndex()
 >>> index.index_filenames('http://www.stanford.edu/',
 		          'http://www.berkeley.edu/',
 		          'http://www.ucla.edu',

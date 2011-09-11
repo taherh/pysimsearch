@@ -115,7 +115,7 @@ class SimIndexService(object):
                         'update_config'}
     
     def __init__(self):
-        self._sim_index = sim_index.SimpleMemorySimIndex()
+        self._sim_index = sim_index.SimpleMapSimIndex()
         self._sim_index.set_query_scorer(query_scorer.TFIDFQueryScorer())
     
     def _dispatch(self, method, params):

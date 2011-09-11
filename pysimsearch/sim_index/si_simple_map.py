@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright (c) 2011, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
@@ -28,15 +28,15 @@
 
 
 '''
-SimpleMemorySimIndex module
+SimpleMapSimIndex module
 
 Sample usage::
 
     from pprint import pprint
-    from pysimsearch.sim_index import SimpleMemorySimIndex
+    from pysimsearch.sim_index import SimpleMapSimIndex
     from pysimsearch import doc_reader
 
-    sim_index = SimpleMemorySimIndex()
+    sim_index = SimpleMapSimIndex()
     sim_index.index_filenames('http://www.stanford.edu/',
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',
@@ -53,32 +53,46 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
 import cPickle as pickle
+from collections import defaultdict
 
 from .sim_index import SimIndex
 from .. import doc_reader
 from .. import term_vec
 from ..exceptions import *
 
-class SimpleMemorySimIndex(SimIndex):
+class SimpleMapSimIndex(SimIndex):
     '''
-    Simple implementation of the ``SimIndex`` interface using in-memory data
-    structures.
+    Simple implementation of the ``SimIndex`` interface backed with dict-like
+    objects (MutableMapping).  By default, uses `dict`, in which case the
+    indexes are in-memory.
+    
+    NOTE: to ensure proper compatibility with arbitrary dict-like objects, any
+    mutations must be done using assignment.  E.g., do not do::
+    
+        map[key].extend([a, b])
+        
+    Instead, do the equivalent of::
+    
+        map[key] = map[key] + [a,b]  # best to avoid +=, may not rebind
     '''
 
-    def __init__(self):
-        super(SimpleMemorySimIndex, self).__init__()
+    def __init__(self,
+                 strkey_map_factory=dict,
+                 docidkey_map_factory=dict,
+                 term_index_map_factory=dict):
+        super(SimpleMapSimIndex, self).__init__()
 
         # index metadata
-        self._name_to_docid_map = {}
-        self._docid_to_name_map = {}
-        self._docid_to_feature_map = {}  # document level features
+        self._name_to_docid_map = strkey_map_factory()
+        self._docid_to_name_map = docidkey_map_factory()
+        self._docid_to_feature_map = docidkey_map_factory()  # document level features
 
         # term index
-        self._term_index = {}
+        self._term_index = term_index_map_factory()
 
         # additional stats used for scoring
-        self._df_map = {}
-        self._doc_len_map = {}
+        self._df_map = strkey_map_factory()
+        self._doc_len_map = docidkey_map_factory()
         
         # global stats, which if present, are used instead
         # of the local stats
@@ -125,11 +139,18 @@ class SimpleMemorySimIndex(SimIndex):
 
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
+        # build up a dictionary of batched updates for the index
+        term_index = defaultdict(list)
         for (term, freq) in term_vec.iteritems():
             if self.config('lowercase'):
                 term = term.lower()
-            if term not in self._term_index: self._term_index[term] = []
-            self._term_index[term].append((docid, freq))
+            term_index[term].append((docid, freq))
+
+        # apply the updates to the term index
+        for (term, new_postings) in term_index.items():
+            self._term_index[term] = self.postings_list(term) + new_postings
+
+
 
     def docid_to_name(self, docid):
         return self._docid_to_name_map[docid]
@@ -181,5 +202,5 @@ class SimpleMemorySimIndex(SimIndex):
         
     @staticmethod
     def load(file):
-        '''Returns a ``SimpleMemorySimIndex`` loaded from pickle file'''
+        '''Returns a ``SimpleMapSimIndex`` loaded from pickle file'''
         return pickle.load(file)

@@ -44,7 +44,7 @@ from multiprocessing import Process
 from pprint import pprint
 
 from pysimsearch import doc_reader
-from pysimsearch.sim_index import SimpleMemorySimIndex
+from pysimsearch.sim_index import SimpleMapSimIndex
 from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch.sim_index import RemoteSimIndex
 from pysimsearch import sim_server
@@ -204,7 +204,7 @@ class SimIndexTest(object):
                                        msg="results={}".format(str(results)))
 
 
-class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
+class SimpleMapSimIndexTest(SimIndexTest, unittest.TestCase):
     '''
     All tests hitting the SimIndex interface are in the parent class, SimIndexTest
     
@@ -213,9 +213,9 @@ class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
     '''
     
     def setUp(self):
-        print("SimpleMemorySimIndexTest")
-        self.sim_index = SimpleMemorySimIndex()
-        super(SimpleMemorySimIndexTest, self).setUp()
+        print("SimpleMapSimIndexTest")
+        self.sim_index = SimpleMapSimIndex()
+        super(SimpleMapSimIndexTest, self).setUp()
 
     def tearDown(self):
         pass
@@ -225,7 +225,7 @@ class SimpleMemorySimIndexTest(SimIndexTest, unittest.TestCase):
         with io.BytesIO() as output:
             self.sim_index.save(output)
             output.seek(0)
-            loaded_sim_index = SimpleMemorySimIndex.load(output)
+            loaded_sim_index = SimpleMapSimIndex.load(output)
         self.sim_index = loaded_sim_index
         self.test_query_simple_scorer()  # make sure test_query() still works
 
@@ -242,7 +242,7 @@ class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
         print("SimIndexCollectionTest")
         self.sim_index = SimIndexCollection()
         for i in range(2):
-            self.sim_index.add_shards(SimpleMemorySimIndex())
+            self.sim_index.add_shards(SimpleMapSimIndex())
 
         super(SimIndexCollectionTest, self).setUp()
     

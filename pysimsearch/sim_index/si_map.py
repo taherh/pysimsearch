@@ -28,15 +28,15 @@
 
 
 '''
-SimpleMapSimIndex module
+MapSimIndex module
 
 Sample usage::
 
     from pprint import pprint
-    from pysimsearch.sim_index import SimpleMapSimIndex
+    from pysimsearch.sim_index import MapSimIndex
     from pysimsearch import doc_reader
 
-    sim_index = SimpleMapSimIndex()
+    sim_index = MapSimIndex()
     sim_index.index_filenames('http://www.stanford.edu/',
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',
@@ -60,7 +60,7 @@ from .. import doc_reader
 from .. import term_vec
 from ..exceptions import *
 
-class SimpleMapSimIndex(SimIndex):
+class MapSimIndex(SimIndex):
     '''
     Simple implementation of the ``SimIndex`` interface backed with dict-like
     objects (MutableMapping).  By default, uses `dict`, in which case the
@@ -86,7 +86,7 @@ class SimpleMapSimIndex(SimIndex):
                  df_map=None,
                  doc_len_map=None):
 
-        super(SimpleMapSimIndex, self).__init__()
+        super(MapSimIndex, self).__init__()
 
         def map(m):
             '''Convenience helper: return m if not None, else return dict()'''
@@ -213,6 +213,6 @@ class SimpleMapSimIndex(SimIndex):
         
     @staticmethod
     def load(file):
-        '''Returns a ``SimpleMapSimIndex`` loaded from pickle file'''
+        '''Returns a ``MapSimIndex`` loaded from pickle file'''
         return pickle.load(file)
 

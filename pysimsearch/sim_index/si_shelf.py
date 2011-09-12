@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 
 # Copyright (c) 2011, Taher Haveliwala <oss@taherh.org>
 # All rights reserved.
@@ -55,10 +55,10 @@ from __future__ import (division, absolute_import, print_function,
 from collections import defaultdict, MutableMapping
 from shelve import DbfilenameShelf as DBShelf
 
-from . import SimpleMapSimIndex
+from . import MapSimIndex
 from ..exceptions import *
 
-class ShelfSimIndex(SimpleMapSimIndex):
+class ShelfSimIndex(MapSimIndex):
     def __init__(self, filename, flag):
         name_to_docid_map = StrKeyMap(DBShelf(filename + '_n2d', flag))
         docid_to_name_map = StrKeyMap(DBShelf(filename + '_d2n', flag))

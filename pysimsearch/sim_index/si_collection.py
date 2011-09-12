@@ -33,9 +33,9 @@ SimIndexCollection module
 Sample usage::
 
     from pprint import pprint
-    from pysimsearch.sim_index import SimpleMapSimIndex, SimIndexCollection
+    from pysimsearch.sim_index import MapSimIndex, SimIndexCollection
 
-    indexes = (SimpleMapSimIndex(), SimpleMapSimIndex())
+    indexes = (MapSimIndex(), MapSimIndex())
     index_coll = SimIndexCollection()
     index_coll.add_shards(*indexes)
     index_coll.set_query_scorer('tfidf')

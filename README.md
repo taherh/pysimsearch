@@ -41,7 +41,7 @@ Sample API usage
                            unicode_literals)
     
     from pprint import pprint
-    from pysimsearch.sim_index import MapSimIndex
+    from pysimsearch.sim_index import MemorySimIndex
     from pysimsearch import doc_reader
     from pysimsearch import similarity
         
@@ -54,7 +54,7 @@ Sample API usage
     
     # Create an in-memory index and query it
     print("Creating in-memory index of university homepages")
-    sim_index = MapSimIndex()
+    sim_index = MemorySimIndex()
     sim_index.index_filenames('http://www.stanford.edu/',
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',

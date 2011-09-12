@@ -30,29 +30,13 @@
 '''
 MapSimIndex module
 
-Sample usage::
-
-    from pprint import pprint
-    from pysimsearch.sim_index import MapSimIndex
-    from pysimsearch import doc_reader
-
-    sim_index = MapSimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
-    pprint(sim_index.postings_list('university'))
-    pprint(list(sim_index.docnames_with_terms('university', 'california')))
-    
-    sim_index.set_query_scorer('simple_count')
-    pprint(list(sim_index.query_by_string("stanford university")))
+See si_memory.py for sample usage
 
 '''
 
 from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
-import cPickle as pickle
 from collections import defaultdict
 
 from .sim_index import SimIndex
@@ -88,24 +72,17 @@ class MapSimIndex(SimIndex):
 
         super(MapSimIndex, self).__init__()
 
-        def map(m):
-            '''Convenience helper: return m if not None, else return dict()'''
-            if m is not None:
-                return m
-            else:
-                return dict()
-            
         # index metadata
-        self._name_to_docid_map = map(name_to_docid_map)
-        self._docid_to_name_map = map(docid_to_name_map)
-        self._docid_to_feature_map = map(docid_to_feature_map)
+        self._name_to_docid_map = name_to_docid_map
+        self._docid_to_name_map = docid_to_name_map
+        self._docid_to_feature_map = docid_to_feature_map
 
         # term index
-        self._term_index = map(term_index)
+        self._term_index = term_index
         
         # additional stats used for scoring
-        self._df_map = map(df_map)
-        self._doc_len_map = map(doc_len_map)
+        self._df_map = df_map
+        self._doc_len_map = doc_len_map
         
         # global stats, which if present, are used instead
         # of the local stats
@@ -202,17 +179,4 @@ class MapSimIndex(SimIndex):
                                             get_doc_len=self.get_doc_len)
         
         return ((self.docid_to_name(docid), score) for (docid, score) in hits)
-        
-    def save(self, file):
-        '''Saved index to file'''
-        # pickle won't let us save query_scorer
-        qs = self.query_scorer
-        self.query_scorer = None
-        pickle.dump(self, file)
-        self.query_scorer = qs
-        
-    @staticmethod
-    def load(file):
-        '''Returns a ``MapSimIndex`` loaded from pickle file'''
-        return pickle.load(file)
 

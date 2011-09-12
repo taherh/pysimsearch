@@ -6,7 +6,7 @@ import time
 
 from pprint import pprint
 
-from pysimsearch.sim_index import MapSimIndex
+from pysimsearch.sim_index import MemorySimIndex
 from pysimsearch.sim_index import RemoteSimIndex
 from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch import similarity
@@ -26,7 +26,7 @@ def sample_sim_index():
     # Create an in-memory index and query it
     print()
     print("Creating in-memory index of university homepages")
-    sim_index = MapSimIndex()
+    sim_index = MemorySimIndex()
     sim_index.index_filenames('http://www.stanford.edu/',
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',
@@ -57,7 +57,7 @@ def sample_sim_index():
     print()
     print("Loading index from disk")
     with open("myindex.idx", "r") as index_file:
-        sim_index2 = MapSimIndex.load(index_file)
+        sim_index2 = MemorySimIndex.load(index_file)
     
     print()
     print("Pages containing terms 'university' and 'california' in loaded index")
@@ -67,7 +67,7 @@ def sample_sim_index_collection():
     # SimIndexCollection
     print()
     print("SimIndexCollection: build a collection, index some urls, and query it")
-    indexes = (MapSimIndex(), MapSimIndex())
+    indexes = (MemorySimIndex(), MemorySimIndex())
     index_coll = SimIndexCollection()
     index_coll.add_shards(*indexes)
     index_coll.set_query_scorer('tfidf')

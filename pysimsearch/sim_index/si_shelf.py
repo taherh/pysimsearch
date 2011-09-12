@@ -33,10 +33,10 @@ Similarity index module.
 Sample usage::
 
     from pprint import pprint
-    from pysimsearch.sim_index import SimpleMemorySimIndex
+    from pysimsearch.sim_index import ShelfSimIndex
     from pysimsearch import doc_reader
 
-    sim_index = SimpleShelfSimIndex()
+    sim_index = ShelfSimIndex()
     sim_index.index_filenames('http://www.stanford.edu/',
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',

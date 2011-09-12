@@ -30,7 +30,7 @@
 '''
 SimIndex module
 
-See ``si_simple_memory.py`` for sample usage
+See ``si_simple_map.py`` for sample usage
 
 '''
 

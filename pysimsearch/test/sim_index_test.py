@@ -45,6 +45,7 @@ from pprint import pprint
 
 from pysimsearch import doc_reader
 from pysimsearch.sim_index import SimpleMapSimIndex
+from pysimsearch.sim_index import ShelfSimIndex
 from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch.sim_index import RemoteSimIndex
 from pysimsearch import sim_server
@@ -228,6 +229,22 @@ class SimpleMapSimIndexTest(SimIndexTest, unittest.TestCase):
             loaded_sim_index = SimpleMapSimIndex.load(output)
         self.sim_index = loaded_sim_index
         self.test_query_simple_scorer()  # make sure test_query() still works
+
+class ShelfSimIndexTest(SimIndexTest, unittest.TestCase):
+    '''
+    All tests hitting the SimIndex interface are in the parent class, SimIndexTest
+    
+    Tests for api's not in parent class are tested separately here.  This is
+    so we can reuse test code across all implementations of SimIndex.
+    '''
+    
+    def setUp(self):
+        print("ShelfSimIndexTest")
+        self.sim_index = ShelfSimIndex("/tmp/test_dbm", 'n')
+        super(ShelfSimIndexTest, self).setUp()
+
+    def tearDown(self):
+        self.sim_index.close()
 
 
 class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):

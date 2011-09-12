@@ -66,33 +66,46 @@ class SimpleMapSimIndex(SimIndex):
     objects (MutableMapping).  By default, uses `dict`, in which case the
     indexes are in-memory.
     
-    NOTE: to ensure proper compatibility with arbitrary dict-like objects, any
-    mutations must be done using assignment.  E.g., do not do::
+    NOTE: to ensure proper compatibility with arbitrary dict-like objects,
+    including persistent shelves, any mutations must be done using assignment.
+    E.g., do not do::
     
         map[key].extend([a, b])
         
     Instead, do the equivalent of::
     
-        map[key] = map[key] + [a,b]  # best to avoid +=, may not rebind
+        map[key] += [a,b]  # same as: map[key] = map[key].__iadd__([a,b])
     '''
 
+    
     def __init__(self,
-                 strkey_map_factory=dict,
-                 docidkey_map_factory=dict,
-                 term_index_map_factory=dict):
+                 name_to_docid_map=None,
+                 docid_to_name_map=None,
+                 docid_to_feature_map=None,
+                 term_index=None,
+                 df_map=None,
+                 doc_len_map=None):
+
         super(SimpleMapSimIndex, self).__init__()
 
+        def map(m):
+            '''Convenience helper: return m if not None, else return dict()'''
+            if m is not None:
+                return m
+            else:
+                return dict()
+            
         # index metadata
-        self._name_to_docid_map = strkey_map_factory()
-        self._docid_to_name_map = docidkey_map_factory()
-        self._docid_to_feature_map = docidkey_map_factory()  # document level features
+        self._name_to_docid_map = map(name_to_docid_map)
+        self._docid_to_name_map = map(docid_to_name_map)
+        self._docid_to_feature_map = map(docid_to_feature_map)
 
         # term index
-        self._term_index = term_index_map_factory()
-
+        self._term_index = map(term_index)
+        
         # additional stats used for scoring
-        self._df_map = strkey_map_factory()
-        self._doc_len_map = docidkey_map_factory()
+        self._df_map = map(df_map)
+        self._doc_len_map = map(doc_len_map)
         
         # global stats, which if present, are used instead
         # of the local stats
@@ -150,8 +163,6 @@ class SimpleMapSimIndex(SimIndex):
         for (term, new_postings) in term_index.items():
             self._term_index[term] = self.postings_list(term) + new_postings
 
-
-
     def docid_to_name(self, docid):
         return self._docid_to_name_map[docid]
         
@@ -204,3 +215,4 @@ class SimpleMapSimIndex(SimIndex):
     def load(file):
         '''Returns a ``SimpleMapSimIndex`` loaded from pickle file'''
         return pickle.load(file)
+

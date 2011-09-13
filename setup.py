@@ -1,7 +1,7 @@
 from distutils.core import setup
 setup(
       name = "pysimsearch",
-      packages = ["pysimsearch", "pysimsearch.test"],
+      packages = ["pysimsearch", "pysimsearch.sim_index", "pysimsearch.test"],
       version = "0.30",
       description = "Similarity-search library",
       author = "Taher Haveliwala",

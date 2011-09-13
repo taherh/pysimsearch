@@ -1,7 +1,7 @@
 .. PySimSearch documentation master file, created by
    sphinx-quickstart on Mon Jul 25 22:06:33 2011.
 
-pysimsearch 0.2.5 documentation
+pysimsearch |version| documentation
 =======================================
 
 Python library for indexing and similarity-search.
@@ -36,7 +36,7 @@ Quickstart:
 
 >>> from pprint import pprint
 >>> from pysimsearch import sim_index, doc_reader
->>> index = sim_index.SimpleMemorySimIndex()
+>>> index = sim_index.MemorySimIndex()
 >>> index.index_filenames('http://www.stanford.edu/',
 		          'http://www.berkeley.edu/',
 		          'http://www.ucla.edu',

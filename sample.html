@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Example &mdash; pysimsearch v0.25 documentation</title>
+    <title>Example &mdash; pysimsearch v0.30 documentation</title>
     <link rel="stylesheet" href="static/custom.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.25',
+        VERSION:     '0.30',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,20 +22,7 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
- 
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-16147715-2']);
-      _gaq.push(['_trackPageview']);
-    
-      (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
-
+    <link rel="top" title="pysimsearch v0.30 documentation" href="index.html" /> 
   </head>
   <body>
     <div class="related">
@@ -47,7 +34,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pysimsearch v0.30 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -61,81 +48,125 @@
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span><span class="p">(</span><span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span>
                        <span class="n">unicode_literals</span><span class="p">)</span>
 
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Process</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
 <span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
 
-<span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">SimpleMemorySimIndex</span>
+<span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">MemorySimIndex</span>
+<span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">RemoteSimIndex</span>
 <span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">SimIndexCollection</span>
-<span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">doc_reader</span>
 <span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">similarity</span>
-<span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">query_scorer</span>
+<span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">sim_server</span>
 
-<span class="c">## pysimsearch.similarity</span>
+<span class="k">def</span> <span class="nf">sample_similarity</span><span class="p">():</span>
+    <span class="c"># Compare web-page similarities</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Printing pairwise similarities of university homepages&quot;</span><span class="p">)</span>
+    <span class="n">similarities</span> <span class="o">=</span> <span class="n">similarity</span><span class="o">.</span><span class="n">pairwise_compare_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                                                         <span class="s">&#39;http://www.berkeley.edu/&#39;</span><span class="p">,</span>
+                                                         <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                                                         <span class="s">&#39;http://www.mit.edu/&#39;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">similarities</span><span class="p">)</span>
 
-<span class="c"># Compare web-page similarities</span>
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Printing pairwise similarities of university homepages&quot;</span><span class="p">)</span>
-<span class="n">similarities</span> <span class="o">=</span> <span class="n">similarity</span><span class="o">.</span><span class="n">pairwise_compare_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
-                                                     <span class="s">&#39;http://www.berkeley.edu/&#39;</span><span class="p">,</span>
-                                                     <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
-                                                     <span class="s">&#39;http://www.mit.edu/&#39;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="n">similarities</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">sample_sim_index</span><span class="p">():</span>            
+    <span class="c"># Create an in-memory index and query it</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Creating in-memory index of university homepages&quot;</span><span class="p">)</span>
+    <span class="n">sim_index</span> <span class="o">=</span> <span class="n">MemorySimIndex</span><span class="p">()</span>
+    <span class="n">sim_index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                              <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+    
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Postings list for &#39;university&#39;:&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">postings_list</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Pages containing terms &#39;university&#39; and &#39;california&#39;&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
+    
+    <span class="c"># Issue some similarity queries</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Similarity search for query &#39;stanford university&#39; (simple scorer)&quot;</span><span class="p">)</span>
+    <span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;simple_count&#39;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+    
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Similarity search for query &#39;stanford university&#39; (tf.idf scorer)&quot;</span><span class="p">)</span>
+    <span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+    
+    <span class="c"># Save the index to disk, then load it back in</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Saving index to disk&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;myindex.idx&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_file</span><span class="p">:</span>
+        <span class="n">sim_index</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">index_file</span><span class="p">)</span>
+    
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Loading index from disk&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;myindex.idx&quot;</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_file</span><span class="p">:</span>
+        <span class="n">sim_index2</span> <span class="o">=</span> <span class="n">MemorySimIndex</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">index_file</span><span class="p">)</span>
+    
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Pages containing terms &#39;university&#39; and &#39;california&#39; in loaded index&quot;</span><span class="p">)</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index2</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
 
-<span class="c">## pysimsearch.sim_index</span>
-
-<span class="c"># Create an in-memory index and query it</span>
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Creating in-memory index of university homepages&quot;</span><span class="p">)</span>
-<span class="n">sim_index</span> <span class="o">=</span> <span class="n">SimpleMemorySimIndex</span><span class="p">()</span>
-<span class="n">sim_index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+<span class="k">def</span> <span class="nf">sample_sim_index_collection</span><span class="p">():</span>
+    <span class="c"># SimIndexCollection</span>
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;SimIndexCollection: build a collection, index some urls, and query it&quot;</span><span class="p">)</span>
+    <span class="n">indexes</span> <span class="o">=</span> <span class="p">(</span><span class="n">MemorySimIndex</span><span class="p">(),</span> <span class="n">MemorySimIndex</span><span class="p">())</span>
+    <span class="n">index_coll</span> <span class="o">=</span> <span class="n">SimIndexCollection</span><span class="p">()</span>
+    <span class="n">index_coll</span><span class="o">.</span><span class="n">add_shards</span><span class="p">(</span><span class="o">*</span><span class="n">indexes</span><span class="p">)</span>
+    <span class="n">index_coll</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
+    <span class="n">index_coll</span><span class="o">.</span><span class="n">index_urls</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
                           <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
                           <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
                           <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+    
+    <span class="n">pprint</span><span class="p">(</span><span class="n">index_coll</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&#39;stanford university&#39;</span><span class="p">))</span>
 
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Postings list for &#39;university&#39;:&quot;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">postings_list</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Pages containing terms &#39;university&#39; and &#39;california&#39;&quot;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
+<span class="k">def</span> <span class="nf">sample_remote_indexes</span><span class="p">():</span>    
+    <span class="k">print</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;SimIndexCollection with remote backend indexes&quot;</span><span class="p">)</span>
+    
+    <span class="n">processes</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="mi">9000</span> <span class="o">+</span> <span class="n">i</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">sim_server</span><span class="o">.</span><span class="n">start_sim_index_server</span><span class="p">,</span>
+                          <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;port&#39;</span><span class="p">:</span> <span class="n">port</span><span class="p">,</span> <span class="s">&#39;logRequests&#39;</span><span class="p">:</span> <span class="bp">False</span><span class="p">})</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">processes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+        
+    <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;Waiting for servers to start&quot;</span><span class="p">)</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-<span class="c"># Issue some similarity queries</span>
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Similarity search for query &#39;stanford university&#39; (simple scorer)&quot;</span><span class="p">)</span>
-<span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;simple_count&#39;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+    <span class="n">remote_index_coll</span> <span class="o">=</span> <span class="n">SimIndexCollection</span><span class="p">()</span>        
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="mi">9000</span> <span class="o">+</span> <span class="n">i</span>
+        <span class="n">remote_index_coll</span><span class="o">.</span><span class="n">add_shards</span><span class="p">(</span>
+            <span class="n">RemoteSimIndex</span><span class="p">(</span><span class="s">&quot;http://localhost:{}/RPC2&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">port</span><span class="p">)))</span>
+        
+    <span class="n">remote_index_coll</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
 
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Similarity search for query &#39;stanford university&#39; (tf.idf scorer)&quot;</span><span class="p">)</span>
-<span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+    <span class="n">remote_index_coll</span><span class="o">.</span><span class="n">index_urls</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                                 <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+    
+    <span class="n">pprint</span><span class="p">(</span><span class="n">remote_index_coll</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&#39;stanford university&#39;</span><span class="p">))</span>
+        
+    <span class="k">for</span> <span class="n">process</span> <span class="ow">in</span> <span class="n">processes</span><span class="p">:</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
 
-<span class="c"># Save the index to disk, then load it back in</span>
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Saving index to disk&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;myindex.idx&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_file</span><span class="p">:</span>
-    <span class="n">sim_index</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">index_file</span><span class="p">)</span>
-
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Loading index from disk&quot;</span><span class="p">)</span>
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;myindex.idx&quot;</span><span class="p">,</span> <span class="s">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">index_file</span><span class="p">:</span>
-    <span class="n">sim_index2</span> <span class="o">=</span> <span class="n">SimpleMemorySimIndex</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">index_file</span><span class="p">)</span>
-
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;Pages containing terms &#39;university&#39; and &#39;california&#39; in loaded index&quot;</span><span class="p">)</span>
-<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index2</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
-
-<span class="c"># SimIndexCollection</span>
-<span class="k">print</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s">&quot;SimIndexCollection: build a collection, index some urls, and query it&quot;</span><span class="p">)</span>
-<span class="n">index1</span> <span class="o">=</span> <span class="n">SimpleMemorySimIndex</span><span class="p">()</span>
-<span class="n">index2</span> <span class="o">=</span> <span class="n">SimpleMemorySimIndex</span><span class="p">()</span>
-<span class="n">index_coll</span> <span class="o">=</span> <span class="n">SimIndexCollection</span><span class="p">()</span>
-<span class="n">index_coll</span><span class="o">.</span><span class="n">add_shards</span><span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">index2</span><span class="p">)</span>
-<span class="n">index_coll</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
-<span class="n">index_coll</span><span class="o">.</span><span class="n">index_urls</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
-                      <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
-                      <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
-                      <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
-
-<span class="n">pprint</span><span class="p">(</span><span class="n">index_coll</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&#39;stanford university&#39;</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">sample_similarity</span><span class="p">()</span>
+    <span class="n">sample_sim_index</span><span class="p">()</span>
+    <span class="n">sample_sim_index_collection</span><span class="p">()</span>
+    <span class="n">sample_remote_indexes</span><span class="p">()</span>
+    <span class="n">pprint</span><span class="p">(</span><span class="s">&#39;done!&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -177,7 +208,7 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pysimsearch v0.30 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

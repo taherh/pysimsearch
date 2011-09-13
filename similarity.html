@@ -7,13 +7,13 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>The similarity Module &mdash; pysimsearch v0.25 documentation</title>
+    <title>The similarity Module &mdash; pysimsearch v0.30 documentation</title>
     <link rel="stylesheet" href="static/custom.css" type="text/css" />
     <link rel="stylesheet" href="static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.25',
+        VERSION:     '0.30',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -22,22 +22,9 @@
     <script type="text/javascript" src="static/jquery.js"></script>
     <script type="text/javascript" src="static/underscore.js"></script>
     <script type="text/javascript" src="static/doctools.js"></script>
-    <link rel="top" title="pysimsearch v0.25 documentation" href="index.html" />
+    <link rel="top" title="pysimsearch v0.30 documentation" href="index.html" />
     <link rel="next" title="The doc_reader Module" href="doc_reader.html" />
-    <link rel="prev" title="The sim_index Module" href="sim_index.html" />
- 
-    <script type="text/javascript">
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-16147715-2']);
-      _gaq.push(['_trackPageview']);
-    
-      (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-    </script>
-
+    <link rel="prev" title="The SimIndexCollection Class" href="sim_index/sim_index_collection.html" /> 
   </head>
   <body>
     <div class="related">
@@ -53,9 +40,9 @@
           <a href="doc_reader.html" title="The doc_reader Module"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="sim_index.html" title="The sim_index Module"
+          <a href="sim_index/sim_index_collection.html" title="The SimIndexCollection Class"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pysimsearch v0.30 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -76,14 +63,14 @@ sim(http://www.berkeley.edu/,http://www.mit.edu/)=0.248877629741</pre>
 <dl class="function">
 <dt id="pysimsearch.similarity.cosine_sim">
 <tt class="descclassname">pysimsearch.similarity.</tt><tt class="descname">cosine_sim</tt><big>(</big><em>u</em>, <em>v</em><big>)</big><a class="headerlink" href="#pysimsearch.similarity.cosine_sim" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the cosine similarity of u,v: &lt;u,v&gt;/(<a href="#id1"><span class="problematic" id="id2">|u||v|</span></a>)
-where <a href="#id3"><span class="problematic" id="id4">|u|</span></a> is the L2 norm</p>
+<dd><p>Returns the cosine similarity of u,v: <tt class="docutils literal"><span class="pre">&lt;u,v&gt;/(|u||v|)</span></tt>
+where <tt class="docutils literal"><span class="pre">|u|</span></tt> is the L2 norm</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="pysimsearch.similarity.jaccard_sim">
 <tt class="descclassname">pysimsearch.similarity.</tt><tt class="descname">jaccard_sim</tt><big>(</big><em>A</em>, <em>B</em><big>)</big><a class="headerlink" href="#pysimsearch.similarity.jaccard_sim" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the Jaccard similarity of A,B: <a href="#id5"><span class="problematic" id="id6">|A \cap B|</span></a> / <a href="#id7"><span class="problematic" id="id8">|A \cup B|</span></a>
+<dd><p>Returns the Jaccard similarity of A,B: <tt class="docutils literal"><span class="pre">|A</span> <span class="pre">\cap</span> <span class="pre">B|</span> <span class="pre">/</span> <span class="pre">|A</span> <span class="pre">\cup</span> <span class="pre">B|</span></tt>
 We treat A and B as multi-sets (The Jaccard coefficient is technically
 meant for sets, although it is easily extended to multi-sets)</p>
 </dd></dl>
@@ -100,7 +87,6 @@ meant for sets, although it is easily extended to multi-sets)</p>
 <dd><p>Returns the textual similarity of term_vec_a and term_vec_b using chosen
 similarity metric</p>
 <p>&#8216;sim_func&#8217; defaults to cosine_sim if not specified</p>
-<p>Consumes file_a and file_b</p>
 </dd></dl>
 
 <dl class="function">
@@ -126,8 +112,8 @@ pairwise similarities</p>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="sim_index.html"
-                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a></p>
+  <p class="topless"><a href="sim_index/sim_index_collection.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">SimIndexCollection</span></tt> Class</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="doc_reader.html"
                         title="next chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">doc_reader</span></tt> Module</a></p>
@@ -166,9 +152,9 @@ pairwise similarities</p>
           <a href="doc_reader.html" title="The doc_reader Module"
              >next</a> |</li>
         <li class="right" >
-          <a href="sim_index.html" title="The sim_index Module"
+          <a href="sim_index/sim_index_collection.html" title="The SimIndexCollection Class"
              >previous</a> |</li>
-        <li><a href="index.html">pysimsearch v0.25 documentation</a> &raquo;</li> 
+        <li><a href="index.html">pysimsearch v0.30 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

@@ -87,6 +87,8 @@ class ShelfSimIndex(MapSimIndex):
                           doc_len_map=doc_len_map)
         
         super(ShelfSimIndex, self).__init__(**self._maps)
+        
+        self._N = len(docid_to_name_map)
 
     def close(self):
         for (mapname, map) in self._maps.items():

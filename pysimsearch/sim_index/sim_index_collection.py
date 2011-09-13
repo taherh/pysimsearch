@@ -116,6 +116,7 @@ class SimIndexCollection(SimIndex):
         for shard in sim_index_shards:
             shard.update_config(**self._config)
         self._shards.extend(sim_index_shards)
+        self.update_trigger_helper()
     
     _salt = None
     def default_shard_func(self, shard_key):

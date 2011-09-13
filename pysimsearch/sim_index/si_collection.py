@@ -28,7 +28,7 @@
 
 
 '''
-SimIndexCollection module
+SimIndexCollection
 
 Sample usage::
 
@@ -55,12 +55,14 @@ from collections import defaultdict
 import operator
 import os
 
-from .sim_index import SimIndex
+from . import SimIndex
 from ..exceptions import *
 
 class SimIndexCollection(SimIndex):
     '''
-    Provides a ``SimIndex`` view over a sharded collection of SimIndexes
+    Inherits from :class:`pysimsearch.sim_index.SimIndex`.
+    
+    Provides a :class:`SimIndex` view over a sharded collection of SimIndexes.
     
     Useful with collections of remote SimIndexes to provide a
     distributed indexing and serving architecture.

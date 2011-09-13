@@ -107,14 +107,14 @@ def pairwise_compare_filenames(*filenames):
     
 def cosine_sim(u, v):
     r'''
-    Returns the cosine similarity of u,v: <u,v>/(|u||v|)
-    where |u| is the L2 norm
+    Returns the cosine similarity of u,v: ``<u,v>/(|u||v|)``
+    where ``|u|`` is the L2 norm
     '''
     return dot_product(u, v) / (l2_norm(u) * l2_norm(v))
 
 def jaccard_sim(A, B):
     r'''
-    Returns the Jaccard similarity of A,B: |A \cap B| / |A \cup B|
+    Returns the Jaccard similarity of A,B: ``|A \cap B| / |A \cup B|``
     We treat A and B as multi-sets (The Jaccard coefficient is technically
     meant for sets, although it is easily extended to multi-sets)
     '''

@@ -28,9 +28,9 @@
 
 
 '''
-MapSimIndex module
+MapSimIndex
 
-See si_memory.py for sample usage
+See :py:class:`MemorySimIndex` for sample usage
 
 '''
 
@@ -39,14 +39,16 @@ from __future__ import (division, absolute_import, print_function,
 
 from collections import defaultdict
 
-from .sim_index import SimIndex
+from . import SimIndex
 from .. import doc_reader
 from .. import term_vec
 from ..exceptions import *
 
 class MapSimIndex(SimIndex):
     '''
-    Simple implementation of the ``SimIndex`` interface backed with dict-like
+    Inherits from :class:`pysimsearch.sim_index.SimIndex`.
+    
+    Simple implementation of the :class:`SimIndex` interface backed with dict-like
     objects (MutableMapping).  By default, uses `dict`, in which case the
     indexes are in-memory.
     

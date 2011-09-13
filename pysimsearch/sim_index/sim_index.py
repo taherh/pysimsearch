@@ -28,9 +28,9 @@
 
 
 '''
-SimIndex module
+SimIndex
 
-See ``si_memory.py`` for sample usage
+See :class:`pysimsearch.sim_index.MemorySimIndex` for sample usage
 
 '''
 
@@ -112,7 +112,7 @@ class SimIndex(object):
         Params:
             query_scorer: if string type, we assume it is a scorer name,
                           else we assume it is itself a scoring object
-                          of base type ``query_scorer.QueryScorer``.
+                          of base type :class:`query_scorer.QueryScorer`.
         '''
         if isinstance(query_scorer, basestring):
             self.query_scorer = QueryScorer.make_scorer(query_scorer)
@@ -132,10 +132,10 @@ class SimIndex(object):
     def index_filenames(self, *filenames):
         '''Build a similarity index over files given by filenames
         
-        Convenience method that wraps index_files()
+        Convenience method that wraps :meth:`index_files()`
         
         Params:
-            *filenames: list of filenames to add to the index.
+            ``*filenames``: list of filenames to add to the index.
         '''
         return self.index_files(zip(filenames,
                                     doc_reader.get_text_files(*filenames)))

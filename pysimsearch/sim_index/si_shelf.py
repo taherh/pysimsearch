@@ -28,7 +28,7 @@
 
 
 '''
-Similarity index module.
+ShelfSimIndex
 
 Sample usage::
 
@@ -59,6 +59,14 @@ from . import MapSimIndex
 from ..exceptions import *
 
 class ShelfSimIndex(MapSimIndex):
+    '''
+    Inherits from :class:`pysimsearch.sim_index.MapSimIndex`.
+    
+    Shelf-based implementation of :class:`SimIndex`.  Indexes are backed with
+    persistent :class:`shelve.DbfilenameShelf` objects.
+    '''
+    
+    
     def __init__(self, filename, flag):
         name_to_docid_map = StrKeyMap(DBShelf(filename + '_n2d', flag))
         docid_to_name_map = StrKeyMap(DBShelf(filename + '_d2n', flag))

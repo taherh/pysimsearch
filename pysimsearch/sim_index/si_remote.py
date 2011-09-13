@@ -28,9 +28,9 @@
 
 
 '''
-RemoteSimIndex module
+RemoteSimIndex
 
-Sample usage::
+Sample usage:
 
 **Server**
 ::
@@ -58,15 +58,15 @@ from __future__ import (division, absolute_import, print_function,
 import jsonrpclib as rpclib
 #import xmlrpclib as rpclib
 
-from .sim_index import SimIndex
+from . import SimIndex
 
 class RemoteSimIndex(object):
-    '''Proxy to a remote ``SimIndex``
+    '''Proxy to a remote :class:`pysimsearch.sim_index.SimIndex`
     
-    ``RemoteSimIndex`` is compatible with the ``SimIndex`` interface,
+    ``RemoteSimIndex`` is compatible with the :class:`SimIndex` interface,
     and provides access to a remote index.  We use this in place of
     directly using a jsonrpclib.Server() object because we need an object
-    that acts like type ``SimIndex``.
+    that acts like type :class:`SimIndex`.
     
     Instantiate a ``RemoteSimIndex`` as follows:
     

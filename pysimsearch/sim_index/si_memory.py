@@ -28,7 +28,7 @@
 
 
 '''
-Similarity index module.
+MemorySimIndex
 
 Sample usage::
 
@@ -56,9 +56,15 @@ import cPickle as pickle
 from collections import defaultdict
 
 from . import MapSimIndex
-from ..exceptions import *
+from pysimsearch.exceptions import *
 
 class MemorySimIndex(MapSimIndex):
+    '''
+    Inherits from :class:`pysimsearch.sim_index.MapSimIndex`.
+    
+    Memory-based implementation of :class:`SimIndex`.  Indexes are backed with
+    ``dict``.
+    '''
     
     def __init__(self):
         

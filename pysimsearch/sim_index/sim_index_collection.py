@@ -44,7 +44,7 @@ Sample usage::
                           'http://www.ucla.edu',
                           'http://www.mit.edu')
     
-    pprint(index_coll.query_by_string('stanford university'))
+    pprint(index_coll.query('stanford university'))
 
 '''
 
@@ -191,15 +191,7 @@ class SimIndexCollection(SimIndex):
 
     @update_trigger
     def index_urls(self, *urls):
-        '''Index web pages given by urls
-        
-        We expose this as a separate api from ``index_filenames()``, so that
-        backends can fetch and index urls themselves.
-        
-        In contrast, ``index_files()`` and ``index_filenames()`` read/collect
-        data centrally, then dispatch fully materialized input data to backends
-        for indexing.
-        '''
+        '''Index web pages given by urls'''
         # minimize rpcs by collecting (name, buffer) tuples for
         # different shards up-front
         sharded_input_map = defaultdict(list)
@@ -209,7 +201,7 @@ class SimIndexCollection(SimIndex):
         # issue an indexing call to each sharded backend that has some input
         # TODO: use non-blocking rpc's
         for shard_id in sharded_input_map:
-            self._shards[shard_id].index_filenames(
+            self._shards[shard_id].index_urls(
                 *sharded_input_map[shard_id]
             )
 
@@ -249,7 +241,7 @@ class SimIndexCollection(SimIndex):
         for shard in self._shards:
             shard.set_query_scorer(query_scorer)
             
-    def query(self, query_vec):
+    def _query(self, query_vec):
         '''Issues query to collection and returns merged results
         
         TODO: use a merge alg. (heapq.merge doesn't have a key= arg yet)
@@ -303,7 +295,7 @@ class SimIndexCollection(SimIndex):
                 gdocid = self.make_node_docid(shard_id, docid)
                 self._name_to_docid_map[name] = gdocid
                 self._docid_to_name_map[gdocid] = name
-        
+
     def broadcast_node_stats(self):  
         # Broadcast global stats.  Only called by collection root node.
         for shard in self._shards:

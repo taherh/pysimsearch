@@ -71,7 +71,7 @@ class RemoteSimIndex(object):
     Instantiate a ``RemoteSimIndex`` as follows:
     
     >>> remote_index = RemoteSimIndex('http://localhost:9001/RPC2')
-    >>> remote_index.query_by_string('university')
+    >>> remote_index.query('university')
     ...
     
     '''

@@ -35,7 +35,7 @@ from __future__ import(division, absolute_import, print_function,
 
 import codecs
 import io
-from itertools import izip as zip
+from itertools import chain
 import re
 
 
@@ -46,57 +46,65 @@ from lxml.html.clean import clean_html
 # get_text_file() needs an http object
 _HTTP = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode arg
 
-def get_text_file(name):
-    '''Returns a text stream from filename or url'''
-    file = None
+def get_text_file(filename):
+    '''Returns file for filename
+    
+    TODO: detect html and parse
+    '''
+    return codecs.open(filename, encoding='utf-8')
+
+def get_url(url):
     http_pattern = '^http://'
-    if re.search(http_pattern, name):
-        (response, content) = _HTTP.request(name)
+    if re.search(http_pattern, url):
+        (response, content) = _HTTP.request(url)
         html_tree = lxml.html.fromstring(content)
         clean_html(html_tree)  # removes crud from html
         clean_html_string = lxml.html.tostring(html_tree, 
                                                encoding=unicode,
                                                method='text')
-        file = io.StringIO(clean_html_string)
+        return io.StringIO(clean_html_string)
     else:
-        file = codecs.open(name, encoding='utf-8')
-    return file
+        raise Exception("Bad url: {}".format(url))
 
-def get_text_files(*names):
-    '''Returns iterator of files from filenames and/or urls'''
-    return (get_text_file(name) for name in names)
-
-def get_named_text_files(*names):
+def get_text_files(filenames=None):
     '''
-    Returns an iterator of (filename, file) tuples from filenames
-    and/or urls (convenience function)
+    Returns an iterator of (name, file) tuples for filenames
+    
+    Params:
+        filenames: list of filenames
     '''
-    return zip(names, get_text_files(*names))
-
-def term_vec(file, stoplist = None):
+    if filenames is not None:
+        return ((name, get_text_file(name)) for name in filenames)
+    
+def get_urls(urls=None):
     '''
-    Returns a term vector for 'file', represented as a dictionary
+    Returns an iterator of (name, file) tuples for urls
+    
+    Params:
+        urls: list of urls to fetch
+    '''
+    if urls is not None:
+        return ((url, get_url(url)) for url in urls)
+    
+def term_vec(input, stoplist = None):
+    '''
+    Returns a term vector for ``input``, represented as a dictionary
     of the form {term: frequency}
-    '''
-    # default args:
-    if stoplist is None:
-        stoplist = set()
     
-    tf_dict = {}
-    for line in file:
-        for term in line.split():
-            if term not in stoplist:
-                if term not in tf_dict: tf_dict[term] = 0
-                tf_dict[term] += 1
-    return tf_dict
-    
-def term_vec_from_string(s):
+    ``input`` can be either a string or a file
     '''
-    Returns term vector for string s, represented as a dictionary of the
-    from {term: frequency}
-
-    (Convenience function - wraps term_vec())
-    '''
-    with io.StringIO(s) as string_buffer:
-        return term_vec(string_buffer)
-    
+    if isinstance(input, basestring):
+        with io.StringIO(input) as string_buffer:
+            return term_vec(string_buffer)
+    else:
+        # default args:
+        if stoplist is None:
+            stoplist = set()
+        
+        tf_dict = {}
+        for line in input:
+            for term in line.split():
+                if term not in stoplist:
+                    if term not in tf_dict: tf_dict[term] = 0
+                    tf_dict[term] += 1
+        return tf_dict

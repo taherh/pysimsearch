@@ -49,8 +49,9 @@ if __name__ == "__main__" and __package__ is None:
     __package__ = str("pysimsearch")
     del sys, os
     
-# external modules
 import argparse
+from itertools import chain, repeat
+import re
 
 # our modules
 from . import doc_reader
@@ -71,35 +72,27 @@ def measure_similarity(file_a, file_b, sim_func = None):
     
     return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
 
-def pairwise_compare_files(*named_files):
+def pairwise_compare(filenames=None, urls=None):
     r'''
-    Do a pairwise comparison of the 'named_files'and print their
-    pairwise similarities
+    Do a pairwise comparison of all documents specified by ``filenames``
+    and ``urls`` and return their pairwise similarities
     '''
+    input = []
+    if filenames is not None:
+        input.extend(zip(filenames, repeat(doc_reader.get_text_file)))
+    if urls is not None:
+        input.extend(zip(urls, repeat(doc_reader.get_url)))
+        
     similarities = []
-    for i in range(0, len(named_files)):
-        for j in range(i+1, len(named_files)):
-            (fname_a, file_a) = named_files[i]
-            (fname_b, file_b) = named_files[j]
-            similarities.append((fname_a,
-                                 fname_b,
-                                 measure_similarity(file_a, file_b)))
-    return similarities
-
-def pairwise_compare_filenames(*filenames):
-    r'''
-    Do a pairwise comparison of the documents specified by 'filenames'
-    and return their pairwise similarities
-    '''    
-    similarities = []
-    for i in range(0, len(filenames)):
-        for j in range(i+1, len(filenames)):
-            fname_a = filenames[i]
-            fname_b = filenames[j]
-            with doc_reader.get_text_file(fname_a) as file_a:
-                with doc_reader.get_text_file(fname_b) as file_b:
-                    similarities.append((fname_a,
-                                         fname_b,
+    for i in range(0, len(input)):
+        for j in range(i+1, len(input)):
+            (name_a, get_input) = input[i]
+            (name_b, get_input) = input[j]
+            print("comparing {} and {}".format(name_a, name_b))
+            with get_input(name_a) as file_a:
+                with get_input(name_b) as file_b:
+                    similarities.append((name_a,
+                                         name_b,
                                          measure_similarity(file_a, file_b)))
     return similarities
   
@@ -129,30 +122,41 @@ def main():
         description='List pairwise similarities of input documents')
     parser.add_argument('doc', nargs='*',
                         help='a document in the comparison list')
-    parser.add_argument('-l', '--list', nargs='?',
-                        help='file containing list of documents to compare')
+    parser.add_argument('-f', '--filename_list', nargs='?',
+                        help='file containing list of filenames to compare')
+    parser.add_argument('-u', '--url_list', nargs='?',
+                        help='file containing list of urls to compare')
 
     args = parser.parse_args()
 
-    doc_list = []
-    if args.list != None:
-        try:
-            with open(args.list) as input_docnames_file:
-                doc_list = [line.strip() for line in
-                            input_docnames_file.readlines()]
-        except IOError:
-            print("Sorry, could not open " + args.list)
+    def get_list(input_fname):
+        list = []
+        if input_fname is not None:
+            try:
+                with open(input_fname) as input_file:
+                    list = [line.strip() for line in
+                                  input_file.readlines()]
+            except IOError:
+                print("Sorry, could not open " + input_fname)
+        return list
 
-    doc_list.extend(args.doc)
+    filenames = get_list(args.filename_list)
+    urls = get_list(args.url_list)
 
-    if len(doc_list) < 2:
+    for doc in args.doc:
+        if re.search('^http://', doc):
+            urls.append(doc)
+        else:
+            filenames.extend(doc)
+
+    if len(filenames) + len(urls) < 2:
         raise Error("Sorry, you must specify at least two documents "
                     "to compare.")  
 
-    print('Comparing files {}'.format(str(doc_list)))
-    similarities = pairwise_compare_filenames(*doc_list)
-    for (fname_a, fname_b, sim) in similarities:
-        print('sim({0},{1})={2}'.format(fname_a, fname_b, sim))
+    print('Comparing files {}'.format(list(chain(filenames, urls))))
+    similarities = pairwise_compare(filenames=filenames, urls=urls)
+    for (name_a, name_b, sim) in similarities:
+        print('sim({0},{1})={2}'.format(name_a, name_b, sim))
 
 
 if __name__ == '__main__':

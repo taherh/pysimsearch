@@ -16,10 +16,11 @@ def sample_similarity():
     # Compare web-page similarities
     print()
     print("Printing pairwise similarities of university homepages")
-    similarities = similarity.pairwise_compare_filenames('http://www.stanford.edu/',
-                                                         'http://www.berkeley.edu/',
-                                                         'http://www.ucla.edu',
-                                                         'http://www.mit.edu/')
+    similarities = similarity.pairwise_compare(
+        urls=['http://www.stanford.edu/',
+              'http://www.berkeley.edu/',
+              'http://www.ucla.edu',
+              'http://www.mit.edu/'])
     pprint(similarities)
 
 def sample_sim_index():            
@@ -27,10 +28,10 @@ def sample_sim_index():
     print()
     print("Creating in-memory index of university homepages")
     sim_index = MemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
+    sim_index.index_urls('http://www.stanford.edu/',
+                         'http://www.berkeley.edu',
+                         'http://www.ucla.edu',
+                         'http://www.mit.edu')
     
     print("Postings list for 'university':")
     pprint(sim_index.postings_list('university'))
@@ -41,12 +42,12 @@ def sample_sim_index():
     print()
     print("Similarity search for query 'stanford university' (simple scorer)")
     sim_index.set_query_scorer('simple_count')
-    pprint(list(sim_index.query_by_string("stanford university")))
+    pprint(list(sim_index.query("stanford university")))
     
     print()
     print("Similarity search for query 'stanford university' (tf.idf scorer)")
     sim_index.set_query_scorer('tfidf')
-    pprint(list(sim_index.query_by_string("stanford university")))
+    pprint(list(sim_index.query("stanford university")))
     
     # Save the index to disk, then load it back in
     print()
@@ -76,7 +77,7 @@ def sample_sim_index_collection():
                           'http://www.ucla.edu',
                           'http://www.mit.edu')
     
-    pprint(index_coll.query_by_string('stanford university'))
+    pprint(index_coll.query('stanford university'))
 
 def sample_remote_indexes():    
     print()
@@ -109,7 +110,7 @@ def sample_remote_indexes():
                                  'http://www.ucla.edu',
                                  'http://www.mit.edu')
     
-    pprint(remote_index_coll.query_by_string('stanford university'))
+    pprint(remote_index_coll.query('stanford university'))
         
     for process in processes:
         process.terminate()

@@ -174,7 +174,7 @@ class SimIndexTest(object):
         # We unpack the golden hit lists, construct a golden set of docnames
         # for the hits, and compare with sim_index.docnames_with_terms()
         for (query, golden_doc_hits) in self.golden_conj_hits.items():
-            query_vec = doc_reader.term_vec_from_string(query)
+            query_vec = doc_reader.term_vec(query)
             terms = [term for (term, freq) in query_vec.items()]
             
             self.assertEqual(golden_doc_hits,
@@ -188,7 +188,7 @@ class SimIndexTest(object):
         self.sim_index.set_query_scorer('simple_count')
         for (query, golden_doc_hits) in self.golden_scored_hits.items():
             self.assertEqual(golden_doc_hits,
-                             dict(self.sim_index.query_by_string(query)),
+                             dict(self.sim_index.query(query)),
                              msg = "query={}".format(query))
 
     def test_query_tfidf_scorer(self):
@@ -198,7 +198,7 @@ class SimIndexTest(object):
         '''
         self.sim_index.set_query_scorer('tfidf')
         for (query, golden_doc_hits_cos) in self.get_golden_hits_cos().items():
-            results = self.sim_index.query_by_string(query)
+            results = self.sim_index.query(query)
             for (docname, score) in results:
                 self.assertAlmostEqual(score,
                                        golden_doc_hits_cos[docname],

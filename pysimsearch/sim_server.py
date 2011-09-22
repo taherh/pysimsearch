@@ -94,7 +94,7 @@ class SimIndexService(object):
     '''Provide access to sim_index as an RPC service'''
 
     PREFIX = 'sim_index'
-    EXPORTED_METHODS = {'index_filenames',
+    EXPORTED_METHODS = {'index_urls',
                         'index_string_buffers',
                         'docid_to_name',
                         'name_to_docid',
@@ -103,7 +103,6 @@ class SimIndexService(object):
                         'docnames_with_terms',
                         'set_query_scorer',
                         'query',
-                        'query_by_string',
                         'set_global_N',
                         'get_local_N',
                         'set_global_df_map',

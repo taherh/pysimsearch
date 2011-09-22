@@ -157,7 +157,7 @@ class MapSimIndex(SimIndex):
 
         return self._term_index.get(term, [])
         
-    def query(self, query_vec):
+    def _query(self, query_vec):
         '''Finds documents similar to query_vec
         
         Params:

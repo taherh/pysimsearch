@@ -121,7 +121,7 @@ class SimIndex(object):
 
     @abc.abstractmethod
     def index_files(self, named_files):
-        '''Adds files given in named_files to the index.
+        '''Add ``named_files`` to the index
         
         Params:
             named_files: iterable of (filename, file) pairs.
@@ -130,18 +130,27 @@ class SimIndex(object):
         return
 
     def index_filenames(self, *filenames):
-        '''Build a similarity index over files given by filenames
+        '''Add ``filenames`` to the index
         
         Convenience method that wraps :meth:`index_files()`
         
         Params:
-            ``*filenames``: list of filenames to add to the index.
+            ``filenames``: list of filenames to add to the index.
         '''
-        return self.index_files(zip(filenames,
-                                    doc_reader.get_text_files(*filenames)))
+        return self.index_files(doc_reader.get_text_files(filenames))
+        
+    def index_urls(self, *urls):
+        '''Add ``urls`` to the index
+        
+        Convenience method that wraps :meth:`index_files()`
+        
+        Params:
+            ``urls``: list of urls of web pages to add to the index.
+        '''
+        return self.index_files(doc_reader.get_urls(urls))
 
     def index_string_buffers(self, named_string_buffers):
-        '''Adds string buffers to the index.
+        '''Add ``named_string_buffers`` to the index
         
         Params:
             named_string_buffers: iterable of (name, string) tuples, where
@@ -190,8 +199,21 @@ class SimIndex(object):
         '''Returns an iterable of docnames containing terms'''
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
+    def query(self, q):
+        '''Finds documents similar to q.
+        
+        Params:
+            query: the query given as either a string or query vector
+        '''
+        if isinstance(q, basestring):
+            if isinstance(q, str):
+                q = unicode(q)
+            return self._query(doc_reader.term_vec(q))
+        else:
+            return self._query(q)
+        
     @abc.abstractmethod
-    def query(self, query_vec):
+    def _query(self, query_vec):
         '''Finds documents similar to query_vec
         
         Params:
@@ -202,14 +224,3 @@ class SimIndex(object):
         '''
         return
     
-    def query_by_string(self, query_string):
-        '''Finds documents similar to query_string.
-        
-        Convenience method that calls ``self.query()``
-        
-        Params:
-            query_string: the query given as a string
-        '''
-        if isinstance(query_string, str):
-            query_string = unicode(query_string)
-        return self.query(doc_reader.term_vec_from_string(query_string))

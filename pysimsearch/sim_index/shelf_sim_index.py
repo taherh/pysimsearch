@@ -45,7 +45,7 @@ Sample usage::
     pprint(list(sim_index.docnames_with_terms('university', 'california')))
     
     sim_index.set_query_scorer('simple_count')
-    pprint(list(sim_index.query_by_string("stanford university")))
+    pprint(list(sim_index.query("stanford university")))
 
 '''
 
@@ -113,7 +113,7 @@ class StrKeyMap(MutableMapping):
         
     def __iter__(self):
         raise Exception('Unsupported')
-        return iter(self._map)
+        # return iter(self._map)
         
     def __len__(self):
         return len(self._map)

@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The ShelfSimIndex Class &mdash; pysimsearch v0.31 documentation</title>
+    <link rel="stylesheet" href="../static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.31',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.31 documentation" href="../index.html" />
+    <link rel="up" title="The sim_index Module" href="../sim_index.html" />
+    <link rel="next" title="The RemoteSimIndex Class" href="remote_sim_index.html" />
+    <link rel="prev" title="The MemorySimIndex Class" href="memory_sim_index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="remote_sim_index.html" title="The RemoteSimIndex Class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="memory_sim_index.html" title="The MemorySimIndex Class"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" accesskey="U">The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.sim_index.shelf_sim_index">
+<span id="the-shelfsimindex-class"></span><h1>The <tt class="xref py py-class docutils literal"><span class="pre">ShelfSimIndex</span></tt> Class<a class="headerlink" href="#module-pysimsearch.sim_index.shelf_sim_index" title="Permalink to this headline">¶</a></h1>
+<p>ShelfSimIndex</p>
+<p>Sample usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">ShelfSimIndex</span>
+<span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">doc_reader</span>
+
+<span class="n">sim_index</span> <span class="o">=</span> <span class="n">ShelfSimIndex</span><span class="p">()</span>
+<span class="n">sim_index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                          <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">postings_list</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
+<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">docnames_with_terms</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">,</span> <span class="s">&#39;california&#39;</span><span class="p">)))</span>
+
+<span class="n">sim_index</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;simple_count&#39;</span><span class="p">)</span>
+<span class="n">pprint</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">sim_index</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&quot;stanford university&quot;</span><span class="p">)))</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="pysimsearch.sim_index.ShelfSimIndex">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">ShelfSimIndex</tt><big>(</big><em>filename</em>, <em>flag</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherits from <a class="reference internal" href="map_sim_index.html#pysimsearch.sim_index.MapSimIndex" title="pysimsearch.sim_index.MapSimIndex"><tt class="xref py py-class docutils literal"><span class="pre">pysimsearch.sim_index.MapSimIndex</span></tt></a>.</p>
+<p>Shelf-based implementation of <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt>.  Indexes are backed with
+persistent <tt class="xref py py-class docutils literal"><span class="pre">shelve.DbfilenameShelf</span></tt> objects.</p>
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.docids_with_terms">
+<tt class="descname">docids_with_terms</tt><big>(</big><em>terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.docids_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of docids of docs containing all terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.docnames_with_terms">
+<tt class="descname">docnames_with_terms</tt><big>(</big><em>*terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.docnames_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of docnames containing terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.get_local_N">
+<tt class="descname">get_local_N</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.get_local_N" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return local number of documents</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.index_filenames">
+<tt class="descname">index_filenames</tt><big>(</big><em>*filenames</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.index_filenames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <tt class="docutils literal"><span class="pre">filenames</span></tt> to the index</p>
+<p>Convenience method that wraps <tt class="xref py py-meth docutils literal"><span class="pre">index_files()</span></tt></p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><tt class="docutils literal"><span class="pre">filenames</span></tt>: list of filenames to add to the index.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.index_files">
+<tt class="descname">index_files</tt><big>(</big><em>named_files</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.index_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build a similarity index over collection given in named_files
+named_files is a list iterable of (filename, file) pairs</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.index_string_buffers">
+<tt class="descname">index_string_buffers</tt><big>(</big><em>named_string_buffers</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.index_string_buffers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <tt class="docutils literal"><span class="pre">named_string_buffers</span></tt> to the index</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>named_string_buffers: iterable of (name, string) tuples, where</dt>
+<dd>the string contains the data to index.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.index_urls">
+<tt class="descname">index_urls</tt><big>(</big><em>*urls</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.index_urls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <tt class="docutils literal"><span class="pre">urls</span></tt> to the index</p>
+<p>Convenience method that wraps <tt class="xref py py-meth docutils literal"><span class="pre">index_files()</span></tt></p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><tt class="docutils literal"><span class="pre">urls</span></tt>: list of urls of web pages to add to the index.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.postings_list">
+<tt class="descname">postings_list</tt><big>(</big><em>term</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.postings_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns list of (docid, freq) tuples for documents containing term</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.query">
+<tt class="descname">query</tt><big>(</big><em>q</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds documents similar to q.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query: the query given as either a string or query vector</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.set_global_N">
+<tt class="descname">set_global_N</tt><big>(</big><em>N</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.set_global_N" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set global number of documents</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ShelfSimIndex.set_query_scorer">
+<tt class="descname">set_query_scorer</tt><big>(</big><em>query_scorer</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ShelfSimIndex.set_query_scorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the query_scorer</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>query_scorer: if string type, we assume it is a scorer name,</dt>
+<dd>else we assume it is itself a scoring object
+of base type <tt class="xref py py-class docutils literal"><span class="pre">query_scorer.QueryScorer</span></tt>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="memory_sim_index.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">MemorySimIndex</span></tt> Class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="remote_sim_index.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">RemoteSimIndex</span></tt> Class</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../sources/sim_index/shelf_sim_index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="remote_sim_index.html" title="The RemoteSimIndex Class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="memory_sim_index.html" title="The MemorySimIndex Class"
+             >previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" >The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

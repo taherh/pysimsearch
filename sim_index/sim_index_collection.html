@@ -1,0 +1,266 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The SimIndexCollection Class &mdash; pysimsearch v0.31 documentation</title>
+    <link rel="stylesheet" href="../static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.31',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.31 documentation" href="../index.html" />
+    <link rel="up" title="The sim_index Module" href="../sim_index.html" />
+    <link rel="next" title="The similarity Module" href="../similarity.html" />
+    <link rel="prev" title="The RemoteSimIndex Class" href="remote_sim_index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../similarity.html" title="The similarity Module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="remote_sim_index.html" title="The RemoteSimIndex Class"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" accesskey="U">The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.sim_index.sim_index_collection">
+<span id="the-simindexcollection-class"></span><h1>The <tt class="xref py py-class docutils literal"><span class="pre">SimIndexCollection</span></tt> Class<a class="headerlink" href="#module-pysimsearch.sim_index.sim_index_collection" title="Permalink to this headline">¶</a></h1>
+<p>SimIndexCollection</p>
+<p>Sample usage:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">from</span> <span class="nn">pysimsearch.sim_index</span> <span class="kn">import</span> <span class="n">MemorySimIndex</span><span class="p">,</span> <span class="n">SimIndexCollection</span>
+
+<span class="n">indexes</span> <span class="o">=</span> <span class="p">(</span><span class="n">MemorySimIndex</span><span class="p">(),</span> <span class="n">MemorySimIndex</span><span class="p">())</span>
+<span class="n">index_coll</span> <span class="o">=</span> <span class="n">SimIndexCollection</span><span class="p">()</span>
+<span class="n">index_coll</span><span class="o">.</span><span class="n">add_shards</span><span class="p">(</span><span class="o">*</span><span class="n">indexes</span><span class="p">)</span>
+<span class="n">index_coll</span><span class="o">.</span><span class="n">set_query_scorer</span><span class="p">(</span><span class="s">&#39;tfidf&#39;</span><span class="p">)</span>
+<span class="n">index_coll</span><span class="o">.</span><span class="n">index_urls</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">,</span>
+                      <span class="s">&#39;http://www.mit.edu&#39;</span><span class="p">)</span>
+
+<span class="n">pprint</span><span class="p">(</span><span class="n">index_coll</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&#39;stanford university&#39;</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="pysimsearch.sim_index.SimIndexCollection">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">SimIndexCollection</tt><big>(</big><em>root=True</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inherits from <a class="reference internal" href="sim_index.html#pysimsearch.sim_index.SimIndex" title="pysimsearch.sim_index.SimIndex"><tt class="xref py py-class docutils literal"><span class="pre">pysimsearch.sim_index.SimIndex</span></tt></a>.</p>
+<p>Provides a <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt> view over a sharded collection of SimIndexes.</p>
+<p>Useful with collections of remote SimIndexes to provide a
+distributed indexing and serving architecture.</p>
+<p>Assumes document-level sharding:</p>
+<blockquote>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">query()</span></tt> requests are routed to all shards in collection.</li>
+<li><tt class="docutils literal"><span class="pre">index_files()</span></tt> requests are routed according to a sharding function</li>
+</ul>
+</blockquote>
+<p>Note that if we had used query-sharding, then instead, queries would
+be routed using a sharding function, and index-requests would be
+routed to all shards.  The two sharding approaches correspond to either
+partitioning the postings matrix by columns (doc-sharding),
+or rows (query-sharding).</p>
+<p>The shard-function is only used for <tt class="docutils literal"><span class="pre">index_*()</span></tt> operations.  If you
+have a read-only collection, you don&#8217;t need a sharding function.</p>
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.default_shard_func">
+<tt class="descname">default_shard_func</tt><big>(</big><em>shard_key</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.default_shard_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>implements the default sharding function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.docid_to_name">
+<tt class="descname">docid_to_name</tt><big>(</big><em>docid</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.docid_to_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translates node docid to name</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.docids_with_terms">
+<tt class="descname">docids_with_terms</tt><big>(</big><em>terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.docids_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of docids of docs containing all terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.docnames_with_terms">
+<tt class="descname">docnames_with_terms</tt><big>(</big><em>*terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.docnames_with_terms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an iterable of docnames containing terms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.get_local_N">
+<tt class="descname">get_local_N</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.get_local_N" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return local number of documents</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.index_filenames">
+<tt class="descname">index_filenames</tt><big>(</big><em>*filenames</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.index_filenames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add <tt class="docutils literal"><span class="pre">filenames</span></tt> to the index</p>
+<p>Convenience method that wraps <tt class="xref py py-meth docutils literal"><span class="pre">index_files()</span></tt></p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><tt class="docutils literal"><span class="pre">filenames</span></tt>: list of filenames to add to the index.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.name_to_docid">
+<tt class="descname">name_to_docid</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.name_to_docid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translates name to node docid</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.postings_list">
+<tt class="descname">postings_list</tt><big>(</big><em>term</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.postings_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns aggregated postings list in terms of global docids</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.query">
+<tt class="descname">query</tt><big>(</big><em>q</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds documents similar to q.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd>query: the query given as either a string or query vector</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.set_config">
+<tt class="descname">set_config</tt><big>(</big><em>key</em>, <em>value</em>, <em>passthrough=True</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.set_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update config var for shards</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.set_query_scorer">
+<tt class="descname">set_query_scorer</tt><big>(</big><em>query_scorer</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.set_query_scorer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Passes <tt class="docutils literal"><span class="pre">set_query_scorer()</span></tt> request to all shards.</p>
+<dl class="docutils">
+<dt>Params:</dt>
+<dd><dl class="first last docutils">
+<dt>query_scorer: scorer object or name. If any backends are remote,</dt>
+<dd>query_scorer needs to be a scorer name, rather than
+a scorer object (which we currently don&#8217;t serialize
+for rpcs)</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.update_config">
+<tt class="descname">update_config</tt><big>(</big><em>passthrough=True</em>, <em>**d</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.update_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update config for shards</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.update_node_stats">
+<tt class="descname">update_node_stats</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.update_node_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetches local stats from all shards, aggregates them, and
+rebroadcasts global stats back to shards.  Currently uses
+&#8220;brute-force&#8221;; incremental updating (in either direction)
+is not supported.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.SimIndexCollection.update_trigger">
+<tt class="descname">update_trigger</tt><big>(</big><em>method</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.SimIndexCollection.update_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator for methods that update the index.  Used as a post-update
+trigger that gathers new term stats, and propagates them back down (if
+we&#8217;re the root node)</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="remote_sim_index.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal docutils literal"><span class="pre">RemoteSimIndex</span></tt> Class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../similarity.html"
+                        title="next chapter">The <tt class="docutils literal docutils literal"><span class="pre">similarity</span></tt> Module</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../sources/sim_index/sim_index_collection.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../similarity.html" title="The similarity Module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="remote_sim_index.html" title="The RemoteSimIndex Class"
+             >previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" >The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

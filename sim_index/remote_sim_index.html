@@ -1,0 +1,151 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>The RemoteSimIndex Class &mdash; pysimsearch v0.31 documentation</title>
+    <link rel="stylesheet" href="../static/custom.css" type="text/css" />
+    <link rel="stylesheet" href="../static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.31',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../static/jquery.js"></script>
+    <script type="text/javascript" src="../static/underscore.js"></script>
+    <script type="text/javascript" src="../static/doctools.js"></script>
+    <link rel="top" title="pysimsearch v0.31 documentation" href="../index.html" />
+    <link rel="up" title="The sim_index Module" href="../sim_index.html" />
+    <link rel="next" title="The SimIndexCollection Class" href="sim_index_collection.html" />
+    <link rel="prev" title="The ShelfSimIndex Class" href="shelf_sim_index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sim_index_collection.html" title="The SimIndexCollection Class"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="shelf_sim_index.html" title="The ShelfSimIndex Class"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" accesskey="U">The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-pysimsearch.sim_index.remote_sim_index">
+<span id="the-remotesimindex-class"></span><h1>The <tt class="xref py py-class docutils literal"><span class="pre">RemoteSimIndex</span></tt> Class<a class="headerlink" href="#module-pysimsearch.sim_index.remote_sim_index" title="Permalink to this headline">¶</a></h1>
+<p>RemoteSimIndex</p>
+<p>Sample usage:</p>
+<p><strong>Server</strong></p>
+<div class="highlight-python"><pre>bash$ pysimsearch/sim_server.py sim_index -p 9001
+Use Control-C to exit</pre>
+</div>
+<p>** pysimsearch Client **</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">pysimsearch</span> <span class="kn">import</span> <span class="n">sim_index</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span> <span class="o">=</span> <span class="n">sim_index</span><span class="o">.</span><span class="n">RemoteSimIndex</span><span class="p">(</span><span class="s">&#39;http://localhost:9001/RPC2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">index</span><span class="o">.</span><span class="n">index_filenames</span><span class="p">(</span><span class="s">&#39;http://www.stanford.edu/&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.berkeley.edu&#39;</span><span class="p">,</span> <span class="s">&#39;http://www.ucla.edu&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pprint</span><span class="p">(</span><span class="n">index</span><span class="o">.</span><span class="n">query_by_string</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">))</span>
+<span class="go">[[u&#39;http://www.stanford.edu/&#39;, 0.10469570845856098],</span>
+<span class="go"> [u&#39;http://www.ucla.edu&#39;, 0.04485065887313478],</span>
+<span class="go"> [u&#39;http://www.berkeley.edu&#39;, 0.020464326883958977]]</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="pysimsearch.sim_index.RemoteSimIndex">
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">RemoteSimIndex</tt><big>(</big><em>server_url</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.RemoteSimIndex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Proxy to a remote <a class="reference internal" href="sim_index.html#pysimsearch.sim_index.SimIndex" title="pysimsearch.sim_index.SimIndex"><tt class="xref py py-class docutils literal"><span class="pre">pysimsearch.sim_index.SimIndex</span></tt></a></p>
+<p><tt class="docutils literal"><span class="pre">RemoteSimIndex</span></tt> is compatible with the <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt> interface,
+and provides access to a remote index.  We use this in place of
+directly using a jsonrpclib.Server() object because we need an object
+that acts like type <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt>.</p>
+<p>Instantiate a <tt class="docutils literal"><span class="pre">RemoteSimIndex</span></tt> as follows:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">remote_index</span> <span class="o">=</span> <span class="n">RemoteSimIndex</span><span class="p">(</span><span class="s">&#39;http://localhost:9001/RPC2&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remote_index</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s">&#39;university&#39;</span><span class="p">)</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="shelf_sim_index.html"
+                        title="previous chapter">The <tt class="docutils literal docutils literal"><span class="pre">ShelfSimIndex</span></tt> Class</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="sim_index_collection.html"
+                        title="next chapter">The <tt class="docutils literal"><span class="pre">SimIndexCollection</span></tt> Class</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../sources/sim_index/remote_sim_index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="sim_index_collection.html" title="The SimIndexCollection Class"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="shelf_sim_index.html" title="The ShelfSimIndex Class"
+             >previous</a> |</li>
+        <li><a href="../index.html">pysimsearch v0.31 documentation</a> &raquo;</li>
+          <li><a href="../sim_index.html" >The <tt class="docutils literal docutils literal docutils literal docutils literal docutils literal"><span class="pre">sim_index</span></tt> Module</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Taher Haveliwala.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>

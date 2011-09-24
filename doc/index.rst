@@ -38,9 +38,9 @@ Quickstart:
 >>> from pysimsearch import sim_index, doc_reader
 >>> index = sim_index.MemorySimIndex()
 >>> index.index_urls('http://www.stanford.edu/',
-		          'http://www.berkeley.edu/',
-		          'http://www.ucla.edu',
-		          'http://www.mit.edu')
+		     'http://www.berkeley.edu/',
+		     'http://www.ucla.edu',
+		     'http://www.mit.edu')
 >>> pprint(index.postings_list('university'))
 [(0, 3), (1, 1), (2, 1)]
 >>> pprint(list(index.docnames_with_terms('university', 'california')))

@@ -46,8 +46,8 @@ to sim_index.
 >>> from pprint import pprint
 >>> import jsonrpclib
 >>> server = jsonrpclib.Server('http://localhost:9001/RPC2')
->>> server.sim_index.index_filenames('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
->>> pprint(server.sim_index.query_by_string('university'))
+>>> server.sim_index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
+>>> pprint(server.sim_index.query('university'))
 [[u'http://www.stanford.edu/', 0.10469570845856098],
  [u'http://www.ucla.edu', 0.04485065887313478],
  [u'http://www.berkeley.edu', 0.020464326883958977]]
@@ -55,8 +55,8 @@ to sim_index.
 ** pysimsearch Client **
 >>> from pysimsearch import sim_index
 >>> index = sim_index.RemoteSimIndex('http://localhost:9001/RPC2')
->>> index.index_filenames('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
->>> pprint(index.query_by_string('university'))
+>>> index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
+>>> pprint(index.query('university'))
 [[u'http://www.stanford.edu/', 0.10469570845856098],
  [u'http://www.ucla.edu', 0.04485065887313478],
  [u'http://www.berkeley.edu', 0.020464326883958977]]

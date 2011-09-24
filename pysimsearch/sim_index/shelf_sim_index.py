@@ -37,10 +37,10 @@ Sample usage::
     from pysimsearch import doc_reader
 
     sim_index = ShelfSimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
+    sim_index.index_urls('http://www.stanford.edu/',
+                         'http://www.berkeley.edu',
+                         'http://www.ucla.edu',
+                         'http://www.mit.edu')
     pprint(sim_index.postings_list('university'))
     pprint(list(sim_index.docnames_with_terms('university', 'california')))
     

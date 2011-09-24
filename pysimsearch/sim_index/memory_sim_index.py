@@ -37,15 +37,15 @@ Sample usage::
     from pysimsearch import doc_reader
 
     sim_index = MemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
+    sim_index.index_urls('http://www.stanford.edu/',
+                         'http://www.berkeley.edu',
+                         'http://www.ucla.edu',
+                         'http://www.mit.edu')
     pprint(sim_index.postings_list('university'))
     pprint(list(sim_index.docnames_with_terms('university', 'california')))
     
     sim_index.set_query_scorer('simple_count')
-    pprint(list(sim_index.query_by_string("stanford university")))
+    pprint(list(sim_index.query("stanford university")))
 
 '''
 

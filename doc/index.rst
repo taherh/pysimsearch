@@ -37,7 +37,7 @@ Quickstart:
 >>> from pprint import pprint
 >>> from pysimsearch import sim_index, doc_reader
 >>> index = sim_index.MemorySimIndex()
->>> index.index_filenames('http://www.stanford.edu/',
+>>> index.index_urls('http://www.stanford.edu/',
 		          'http://www.berkeley.edu/',
 		          'http://www.ucla.edu',
 		          'http://www.mit.edu')
@@ -46,7 +46,7 @@ Quickstart:
 >>> pprint(list(index.docnames_with_terms('university', 'california')))
 ['http://www.stanford.edu/', 'http://www.ucla.edu']
 >>> index.set_query_scorer('tfidf')
->>> pprint(list(index.query_by_string("stanford university")))
+>>> pprint(list(index.query("stanford university")))
 [('http://www.stanford.edu/', 0.5827172819606118),
  ('http://www.ucla.edu', 0.05801461340864149),
  ('http://www.berkeley.edu/', 0.025725104682131295)]

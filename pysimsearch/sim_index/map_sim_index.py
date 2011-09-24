@@ -40,7 +40,6 @@ from __future__ import (division, absolute_import, print_function,
 from collections import defaultdict
 
 from . import SimIndex
-from .. import doc_reader
 from .. import term_vec
 from ..exceptions import *
 
@@ -116,7 +115,7 @@ class MapSimIndex(SimIndex):
         '''
         for (name, file) in named_files:
             with file:
-                t_vec = doc_reader.term_vec(file, self.config('stoplist'))
+                t_vec = term_vec.term_vec(file, self.config('stoplist'))
             docid = self._N
             self._name_to_docid_map[name] = docid
             self._docid_to_name_map[docid] = name

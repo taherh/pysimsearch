@@ -70,7 +70,7 @@ def measure_similarity(file_a, file_b, sim_func = None):
     if sim_func == None:
         sim_func = cosine_sim  # default to cosine_sim
     
-    return sim_func(doc_reader.term_vec(file_a), doc_reader.term_vec(file_b))
+    return sim_func(term_vec(file_a), term_vec(file_b))
 
 def pairwise_compare(filenames=None, urls=None):
     r'''

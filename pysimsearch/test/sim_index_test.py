@@ -43,7 +43,7 @@ import time
 from multiprocessing import Process
 from pprint import pprint
 
-from pysimsearch import doc_reader
+from pysimsearch import term_vec
 from pysimsearch.sim_index import MemorySimIndex
 from pysimsearch.sim_index import ShelfSimIndex
 from pysimsearch.sim_index import SimIndexCollection
@@ -67,12 +67,8 @@ class SimIndexTest(object):
     def setUp(self):
         with io.StringIO(self.stopfile_buffer) as stopfile:
             self.sim_index.load_stoplist(stopfile)
-        
-        named_files = ((docname, io.StringIO(doc))
-                            for (docname, doc) in self.docs)
-        self.sim_index.index_files(named_files)
-    
-
+            
+        self.sim_index.index_string_buffers(self.docs)
 
     # Stopword list
     stopfile_buffer = "stopword1 stopword2"
@@ -174,7 +170,7 @@ class SimIndexTest(object):
         # We unpack the golden hit lists, construct a golden set of docnames
         # for the hits, and compare with sim_index.docnames_with_terms()
         for (query, golden_doc_hits) in self.golden_conj_hits.items():
-            query_vec = doc_reader.term_vec(query)
+            query_vec = term_vec.term_vec(query)
             terms = [term for (term, freq) in query_vec.items()]
             
             self.assertEqual(golden_doc_hits,
@@ -203,7 +199,41 @@ class SimIndexTest(object):
                 self.assertAlmostEqual(score,
                                        golden_doc_hits_cos[docname],
                                        msg="results={}".format(str(results)))
+                
+    def test_config(self):
+        '''Ensure that various config params are properly handled'''
 
+        ### Test 'lowercase' param
+        
+        def _check_lc(index, golden_results):
+            '''helper that checks index against golden_results'''
+            for (term, golden_docs) in golden_results:
+                self.assertEqual(
+                    set(index.docnames_with_terms(term)), golden_docs)
+                self.assertEqual(
+                    set([doc for (doc, score) in index.query(term)]), golden_docs)
+                
+        # test data
+        test_docs = (('doc1', 'Hello There'),
+                     ('doc2', 'hello there'))
+
+        # lowercase=True
+        index = MemorySimIndex()
+        index.set_config('lowercase', True)
+        index.index_string_buffers(test_docs)
+        golden_results = (('hello', {'doc1', 'doc2'}),
+                          ('Hello', {'doc1', 'doc2'}),
+                          ('HELLO', {'doc1', 'doc2'}))
+        _check_lc(index, golden_results)
+        
+        # lowercase=False
+        index = MemorySimIndex()
+        index.set_config('lowercase', False)
+        index.index_string_buffers(test_docs)
+        golden_results = (('hello', {'doc2'}),
+                          ('Hello', {'doc1'}),
+                          ('HELLO', set()))
+        _check_lc(index, golden_results)
 
 class MemorySimIndexTest(SimIndexTest, unittest.TestCase):
     '''

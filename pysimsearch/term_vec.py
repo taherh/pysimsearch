@@ -30,6 +30,7 @@
 Term-vector operations
 '''
 
+import io
 import math
 
 def dot_product(v1, v2):
@@ -68,3 +69,26 @@ def mag_intersect(A, B):
 def magnitude(v):
     '''Returns L2 norm of term vector v (identical to l2_norm())'''
     return l2_norm(v)
+
+def term_vec(input, stoplist = None):
+    '''
+    Returns a term vector for ``input``, represented as a dictionary
+    of the form {term: frequency}
+    
+    ``input`` can be either a string or a file
+    '''
+    if isinstance(input, basestring):
+        with io.StringIO(input) as string_buffer:
+            return term_vec(string_buffer)
+    else:
+        # default args:
+        if stoplist is None:
+            stoplist = set()
+        
+        tf_dict = {}
+        for line in input:
+            for term in line.split():
+                if term not in stoplist:
+                    if term not in tf_dict: tf_dict[term] = 0
+                    tf_dict[term] += 1
+        return tf_dict

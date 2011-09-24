@@ -42,6 +42,7 @@ import io
 import itertools
 
 from .. import doc_reader
+from .. import term_vec
 from ..exceptions import *
 from ..query_scorer import QueryScorer
 
@@ -197,6 +198,8 @@ class SimIndex(object):
     
     def docnames_with_terms(self, *terms):
         '''Returns an iterable of docnames containing terms'''
+        if self.config('lowercase'):
+            terms = [term.lower() for term in terms]
         return (self.docid_to_name(docid) for docid in self.docids_with_terms(terms))
         
     def query(self, q):
@@ -204,13 +207,16 @@ class SimIndex(object):
         
         Params:
             query: the query given as either a string or query vector
+            
+        Returns:
+            A iterable of (docname, score) tuples sorted by score
         '''
         if isinstance(q, basestring):
             if self.config('lowercase'):
                 q = q.lower()
             if isinstance(q, str):
                 q = unicode(q)
-            return self._query(doc_reader.term_vec(q))
+            return self._query(term_vec.term_vec(q))
         else:
             if self.config('lowercase'):
                 q = {term.lower(): freq for (term, freq) in q.items()}

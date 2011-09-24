@@ -92,6 +92,8 @@ class RemoteSimIndex(object):
             func = getattr(self._server,
                            self.PREFIX + '.' + name)
             return func
+        else:
+            raise Exception("Unsupported method: {}".format(name))
 
 # RemoteSimIndex is a subtype of SimIndex    
 SimIndex.register(RemoteSimIndex)

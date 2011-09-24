@@ -9,7 +9,7 @@ setup(
       url = "https://github.com/taherh/pysimsearch",
       download_url = "https://github.com/downloads/taherh/pysimsearch/pysimsearch-0.31.tar.gz",
       keywords = ["similarity"],
-      requires = ["httplib2", "lxml", "jsonrpclib"],
+      requires = ["httplib2", "lxml", "jsonrpclib", "futures"],
       license = "BSD License",
       classifiers = [
                      "Programming Language :: Python",

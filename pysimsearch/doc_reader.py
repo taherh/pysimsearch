@@ -38,13 +38,13 @@ import io
 from itertools import chain
 import re
 
-
+from concurrent import futures
 import httplib2
 import lxml.html
 from lxml.html.clean import clean_html
 
 # get_text_file() needs an http object
-_HTTP = httplib2.Http(str('.cache'))  # httplib2 doesn't like unicode arg
+_HTTP = httplib2.Http(cache=str('.cache'), timeout=30)
 
 def get_text_file(filename):
     '''Returns file for filename
@@ -83,5 +83,29 @@ def get_urls(urls=None):
     Params:
         urls: list of urls to fetch
     '''
+    # The below effectively implements
+    #
+    #    return ((url, get_url(url)) for url in urls)
+    #
+    # but uses futures to allow parallel fetching/processing of urls
     if urls is not None:
-        return ((url, get_url(url)) for url in urls)
+        # submit the get_url() requests
+        with futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_url = {
+                executor.submit(get_url, url): url
+                for url in urls
+            }
+        
+        # generator that lazily iterates over futures and yields
+        # (url, file) tuples
+        def _gen_result():
+            named_files = []
+            for future in futures.as_completed(future_to_url, timeout=60):
+                url = future_to_url[future]
+                if future.exception() is not None:
+                    raise Exception("failed to fetch {}: e=".format(url, future.exception()))
+                else:
+                    yield (url, future.result())
+
+        # return iterator
+        return _gen_result()

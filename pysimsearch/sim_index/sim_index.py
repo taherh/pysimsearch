@@ -206,10 +206,14 @@ class SimIndex(object):
             query: the query given as either a string or query vector
         '''
         if isinstance(q, basestring):
+            if self.config('lowercase'):
+                q = q.lower()
             if isinstance(q, str):
                 q = unicode(q)
             return self._query(doc_reader.term_vec(q))
         else:
+            if self.config('lowercase'):
+                q = {term.lower(): freq for (term, freq) in q.items()}
             return self._query(q)
         
     @abc.abstractmethod

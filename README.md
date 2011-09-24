@@ -47,18 +47,18 @@ Sample API usage
         
     # Compare web-page similarities
     print("Printing pairwise similarities of university homepages")
-    pprint(similarity.pairwise_compare_filenames('http://www.stanford.edu/',
-                                                 'http://www.berkeley.edu/',
-                                                 'http://www.ucla.edu',
-                                                 'http://www.mit.edu/'))
+    pprint(similarity.pairwise_compare(urls=['http://www.stanford.edu/',
+                                             'http://www.berkeley.edu/',
+                                             'http://www.ucla.edu',
+                                             'http://www.mit.edu/']))
     
     # Create an in-memory index and query it
     print("Creating in-memory index of university homepages")
     sim_index = MemorySimIndex()
-    sim_index.index_filenames('http://www.stanford.edu/',
-                              'http://www.berkeley.edu',
-                              'http://www.ucla.edu',
-                              'http://www.mit.edu')
+    sim_index.index_urls('http://www.stanford.edu/',
+                         'http://www.berkeley.edu',
+                         'http://www.ucla.edu',
+                         'http://www.mit.edu')
                               
     print("Postings list for 'university':")
     pprint(sim_index.postings_list('university'))
@@ -68,8 +68,7 @@ Sample API usage
     # Issue some similarity queries
     print("Similarity search for query 'stanford university'")
     sim_index.set_query_scorer('simple_count')
-    pprint(list(sim_index.query_by_string('stanford university')))
-
+    pprint(list(sim_index.query('stanford university')))
 
 
 Sample Client/Server Usage via JSON api
@@ -85,15 +84,11 @@ Sample Client/Server Usage via JSON api
     >>> from pprint import pprint
     >>> import jsonrpclib
     >>> server = jsonrpclib.Server('http://localhost:9001/RPC2')
-    >>> server.sim_index.index_filenames('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
-    >>> pprint(server.sim_index.query_by_string('university'))
-    [[u'http://www.stanford.edu/', 0.10469570845856098],
-     [u'http://www.ucla.edu', 0.04485065887313478],
-     [u'http://www.berkeley.edu', 0.020464326883958977]]
-    >>> pprint(server.sim_index.query_by_string('university'))
-    [[u'http://www.stanford.edu/', 0.10469570845856098],
-     [u'http://www.ucla.edu', 0.04485065887313478],
-     [u'http://www.berkeley.edu', 0.020464326883958977]]
+    >>> server.sim_index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
+    >>> pprint(server.sim_index.query('stanford university'))
+    [[u'http://www.stanford.edu', 0.4396892551666724],
+     [u'http://www.berkeley.edu', 0.0],
+     [u'http://www.ucla.edu', 0.0]]
 
 
 Sample SimIndexCollection Usage
@@ -120,7 +115,7 @@ Sample SimIndexCollection Usage
                               'http://www.berkeley.edu',
                               'http://www.ucla.edu',
                               'http://www.mit.edu')
-    >>> index_coll.query_by_string("stanford university")
-    [(u'http://www.stanford.edu/', 0.6051137187642046),
-     (u'http://www.ucla.edu', 0.05827029826763635),
-     (u'http://www.berkeley.edu', 0.025809675718971692)]
+    >>> pprint(index_coll.query("stanford university"))
+    [[u'http://www.stanford.edu/', 0.5836102697341475],
+     [u'http://www.ucla.edu', 0.012839879268194701],
+     [u'http://www.berkeley.edu', 0.005337522642134812]]

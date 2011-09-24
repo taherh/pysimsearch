@@ -210,11 +210,11 @@ class SimIndexCollection(SimIndex):
         return "{}-{}".format(shard_id, docid)
     
     def docid_to_name(self, docid):
-        '''Translates global docid to name'''
+        '''Translates node docid to name'''
         return self._docid_to_name_map[docid]
     
     def name_to_docid(self, name):
-        '''Translates name to global docid'''
+        '''Translates name to node docid'''
         return self._name_to_docid_map[name]
     
     def postings_list(self, term):

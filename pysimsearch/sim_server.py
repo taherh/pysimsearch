@@ -114,8 +114,8 @@ class SimIndexService(object):
                         'update_config'}
     
     def __init__(self):
-        self._sim_index = sim_index.MemorySimIndex()
-        self._sim_index.set_query_scorer(query_scorer.TFIDFQueryScorer())
+        self._sim_index = sim_index.ConcurrentSimIndex(sim_index.MemorySimIndex())
+        self._sim_index.set_query_scorer('tfidf')
     
     def _dispatch(self, method, params):
         if not method.startswith(self.PREFIX + '.'):

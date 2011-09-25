@@ -44,7 +44,7 @@ import lxml.html
 from lxml.html.clean import clean_html
 
 # get_text_file() needs an http object
-_HTTP = httplib2.Http(cache=str('.cache'), timeout=30)
+_HTTP = httplib2.Http(timeout=30)
 
 def get_text_file(filename):
     '''Returns file for filename

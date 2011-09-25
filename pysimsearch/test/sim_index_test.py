@@ -46,6 +46,7 @@ from pprint import pprint
 from pysimsearch import term_vec
 from pysimsearch.sim_index import MemorySimIndex
 from pysimsearch.sim_index import ShelfSimIndex
+from pysimsearch.sim_index import ConcurrentSimIndex
 from pysimsearch.sim_index import SimIndexCollection
 from pysimsearch.sim_index import RemoteSimIndex
 from pysimsearch import sim_server
@@ -276,6 +277,21 @@ class ShelfSimIndexTest(SimIndexTest, unittest.TestCase):
     def tearDown(self):
         self.sim_index.close()
 
+class ConcurrentSimIndexTest(SimIndexTest, unittest.TestCase):
+    '''
+    All tests hitting the SimIndex interface are in the parent class, SimIndexTest
+    
+    Tests for api's not in parent class are tested separately here.  This is
+    so we can reuse test code across all implementations of SimIndex.
+    '''
+    
+    def setUp(self):
+        print("ConcurrentSimIndexTest")
+        self.sim_index = ConcurrentSimIndex(MemorySimIndex())
+        super(ConcurrentSimIndexTest, self).setUp()
+
+    def tearDown(self):
+        pass
 
 class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
     '''

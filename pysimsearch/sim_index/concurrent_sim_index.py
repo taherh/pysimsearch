@@ -32,6 +32,14 @@ ConcurrentSimIndex
 
 Wrapper to allow concurrent SimIndex access
 
+Sample usage::
+
+    from pysimsearch.sim_index import MemorySimIndex, ConcurrentSimIndex
+
+    index = ConcurrentSimIndex(MemorySimIndex())
+    index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu')
+    print(list(index.query('stanford')))
+
 '''
 
 from __future__ import (division, absolute_import, print_function,
@@ -49,12 +57,6 @@ class ConcurrentSimIndex(object):
     ``ConcurrentSimIndex`` is compatible with the :class:`SimIndex` interface.
     We use ``concurrent.futures`` to allow some basic concurrency for indexing
     and querying.
-    
-    >>> index = ConcurrentSimIndex(MemorySimIndex())
-    >>> index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu')
-    >>> index.query('stanford')
-    ...
-    
     '''
 
     READ_METHODS = {'name_to_docid',
@@ -75,8 +77,8 @@ class ConcurrentSimIndex(object):
                      'set_config',
                      'update_config'}
     
-    CONCURRENT_METHODS = {'index_urls',
-                          'index_string_buffers'}
+    NONBLOCKING_WRITE_METHODS = {'index_urls',
+                                 'index_string_buffers'}
     
     def __init__(self, sim_index):
         '''Initialize with ``sim_index``
@@ -150,7 +152,7 @@ class ConcurrentSimIndex(object):
             return self.read_decorator(func)
         elif name in self.WRITE_METHODS:
             return self.write_decorator(func)
-        elif name in self.CONCURRENT_METHODS:
+        elif name in self.NONBLOCKING_WRITE_METHODS:
             return self.concurrency_decorator(self.write_decorator(func))
         else:
             raise Exception("Unsupported method: {}".format(name))

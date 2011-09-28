@@ -155,5 +155,5 @@ class ConcurrentSimIndex(object):
         else:
             raise Exception("Unsupported method: {}".format(name))
 
-# RemoteSimIndex is a subtype of SimIndex    
+# ConcurrentSimIndex is a subtype of SimIndex    
 SimIndex.register(ConcurrentSimIndex)

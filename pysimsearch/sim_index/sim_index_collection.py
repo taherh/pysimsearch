@@ -199,8 +199,9 @@ class SimIndexCollection(SimIndex):
             sharded_input_map[self.shard_func(url)].append(url)
 
         # Issue an indexing call to each sharded backend that has some input
-        # Generally the sharded servers should be using ConcurrentSimIndexes
-        # so that the index_urls() call will be non-blocking.
+        # Generally the sharded servers should be backed with
+        # ConcurrentSimIndexes so that the index_urls() call will generally
+        # be non-blocking.
         for shard_id in sharded_input_map:
             self._shards[shard_id].index_urls(
                 *sharded_input_map[shard_id]

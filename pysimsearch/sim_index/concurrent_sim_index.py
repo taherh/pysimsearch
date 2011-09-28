@@ -56,7 +56,8 @@ class ConcurrentSimIndex(object):
     
     ``ConcurrentSimIndex`` is compatible with the :class:`SimIndex` interface.
     We use ``concurrent.futures`` to allow some basic concurrency for indexing
-    and querying.
+    and querying.  In particular, calls to ``index_urls()`` are executed in a
+    nonblocking manner.
     '''
 
     READ_METHODS = {'name_to_docid',
@@ -75,10 +76,19 @@ class ConcurrentSimIndex(object):
                      'set_global_df_map',
                      'load_stoplist',
                      'set_config',
-                     'update_config'}
+                     'update_config',
+                     'index_string_buffers',
+                     'index_files'
+                     }
     
-    NONBLOCKING_WRITE_METHODS = {'index_urls',
-                                 'index_string_buffers'}
+    # Note:  assume that index_urls() is implemented by calling index_files()
+    #        so that the write-lock will be acquired at that time index_files()
+    #        is called.  We don't want to acquire a lock on index_urls()
+    #        directly, as we'd like allow url fetches to occur concurrently.
+    #
+    # TODO: re-implement index_urls() here to ensure the assumption is true?
+    NONBLOCKING_METHODS = { 'index_urls' }
+
     
     def __init__(self, sim_index):
         '''Initialize with ``sim_index``
@@ -92,18 +102,22 @@ class ConcurrentSimIndex(object):
         self._futures = set()
     
     def acquire_read_lock(self):
+        '''Acquire read lock'''
         self._lock.acquire()
     
     def release_read_lock(self):
+        '''Release read lock'''
         self._lock.release()
     
     def acquire_write_lock(self):
+        '''Acquire write lock'''
         self._lock.acquire()
         
     def release_write_lock(self):
+        '''Release write lock'''
         self._lock.release()
         
-    def read_decorator(self, func):
+    def _read_decorator(self, func):
         '''Wrap func with read_lock protection'''
         def wrapper(*args, **kwargs):
             self.acquire_read_lock()
@@ -113,7 +127,7 @@ class ConcurrentSimIndex(object):
                 self.release_read_lock()
         return wrapper
 
-    def write_decorator(self, func):
+    def _write_decorator(self, func):
         '''Wrap func with write_lock protection'''
         def wrapper(*args, **kwargs):
             self.acquire_write_lock()
@@ -123,7 +137,7 @@ class ConcurrentSimIndex(object):
                 self.release_write_lock()
         return wrapper
     
-    def concurrency_decorator(self, func):
+    def _nonblocking_decorator(self, func):
         '''
         Wrap func with non-blocking futures call.
         Return value of ``func`` is ignored.
@@ -133,7 +147,7 @@ class ConcurrentSimIndex(object):
             self._futures.add(future)
         return wrapper
 
-    def futures_wait(self):
+    def _futures_wait(self):
         if len(self._futures) > 0:
             r = futures.wait(self._futures)
             for future in r.done:
@@ -144,16 +158,15 @@ class ConcurrentSimIndex(object):
     def __getattr__(self, name):
         func = getattr(self._sim_index, name)
         
-        # let's wait for any outstanding writes to complete, and
-        # detect any exceptions
-        self.futures_wait()
-        
         if name in self.READ_METHODS:
-            return self.read_decorator(func)
+            # wait for any outstanding non-blocking calls to complete
+            self._futures_wait()
+            return self._read_decorator(func)
         elif name in self.WRITE_METHODS:
-            return self.write_decorator(func)
-        elif name in self.NONBLOCKING_WRITE_METHODS:
-            return self.concurrency_decorator(self.write_decorator(func))
+            # wait for any outstanding  non-blocking calls to complete
+            return self._write_decorator(func)
+        elif name in self.NONBLOCKING_METHODS:
+            return self._nonblocking_decorator(func)
         else:
             raise Exception("Unsupported method: {}".format(name))
 

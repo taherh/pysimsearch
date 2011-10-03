@@ -36,20 +36,17 @@ from __future__ import(division, absolute_import, print_function,
 
 import unittest
 
+import io
+from itertools import combinations
 import math
-import os
-import pprint
 
 from pysimsearch import similarity
 
 class SimilarityTest(unittest.TestCase):
     longMessage = True
-    testdata_dir = None  # Will be set in setUp()
 
     def setUp(self):
-        # set testdata_dir
-        rel_file_path = os.path.dirname(__file__)
-        self.testdata_dir = os.path.join(os.getcwd(), rel_file_path, 'data/')
+        pass
 
     def tearDown(self):
         pass
@@ -57,37 +54,31 @@ class SimilarityTest(unittest.TestCase):
     def test_measure_similarity(self):
         '''
         measure_similarity() should give known results for known inputs
-        known input files are listed in 'test/data/test_filenames'
-        known results are listed in 'test/data/expected_results' with the format
-            filename1 filename2 sim
         '''
-        # read test filenames
-        with open(self.testdata_dir + 'test_filenames') as input_filenames_file:
-            input_filenames = [fname.rstrip() for fname in 
-                               input_filenames_file.readlines()]
         
-        input_filenames.sort()
-                
-        # read expected results
-        expected_sims = dict()
-        with open(self.testdata_dir + 'expected_results') as \
-                expected_results_file:
-            for line in expected_results_file:
-                (fname_a, fname_b, expected_sim) = line.split()
-                self.assertTrue(fname_a < fname_b,
-                             'expected_results: require fname_a < fname_b: ' + 
-                             line)
-                expected_sims[(fname_a,fname_b)] = float(expected_sim)
-                
-        # check computed similarities against expected similarities
-        for (fname_a, fname_b) in expected_sims:
+        testdata = {
+            'testdata_1': "hello",
+            'testdata_2': "hello",
+            'testdata_3': "world",
+            'testdata_4': "hello world",
+        }
+        expected_sims = {
+            ('testdata_1', 'testdata_2'): 1,
+            ('testdata_1', 'testdata_3'): 0,
+            ('testdata_1', 'testdata_4'): (1 / math.sqrt(2)),
+            ('testdata_2', 'testdata_3'): 0,
+            ('testdata_2', 'testdata_4'): (1 / math.sqrt(2)),
+            ('testdata_3', 'testdata_4'): (1 / math.sqrt(2)),
+        }
+        
+        for (fname_a, fname_b) in combinations(sorted(testdata.keys()), 2):
             print('Comparing {0},{1}'.format(fname_a, fname_b))
-            with open(self.testdata_dir + fname_a) as file_a:
-                with open(self.testdata_dir + fname_b) as file_b:
+            with io.StringIO(testdata[fname_a]) as file_a:
+                with io.StringIO(testdata[fname_b]) as file_b:
                     sim = similarity.measure_similarity(file_a, file_b)
                     self.assertAlmostEqual(
                             sim, expected_sims[(fname_a, fname_b)], 
-                            places = 3,
+                            places = 5,
                             msg = 'Mismatch for pair {0}: got {1}, expected {2}'.
                             format((fname_a, fname_b), sim, 
                                    expected_sims[(fname_a, fname_b)]))

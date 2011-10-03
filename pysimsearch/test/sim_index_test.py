@@ -75,9 +75,9 @@ class SimIndexTest(object):
     stopfile_buffer = "stopword1 stopword2"
 
     # Test documents
-    docs = [ ('doc1', "hello there world     hello stopword1"),
+    docs = ( ('doc1', "hello there world     hello stopword1"),
              ('doc2', "hello       world           stopword2"),
-             ('doc3', "hello there       bob      ") ]
+             ('doc3', "hello there       bob      ") )
     
     # Postings that correspond to test documents
     golden_postings = { 'hello': {'doc1': 2, 'doc2': 1, 'doc3': 1},

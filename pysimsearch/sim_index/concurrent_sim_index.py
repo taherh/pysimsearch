@@ -82,9 +82,10 @@ class ConcurrentSimIndex(object):
                      }
     
     # Note:  assume that index_urls() is implemented by calling index_files()
-    #        so that the write-lock will be acquired at that time index_files()
+    #        so that the write-lock will be acquired at the time index_files()
     #        is called.  We don't want to acquire a lock on index_urls()
-    #        directly, as we'd like allow url fetches to occur concurrently.
+    #        directly, as we'd like allow at least the url fetches to occur
+    #        concurrently.
     #
     # TODO: re-implement index_urls() here to ensure the assumption is true?
     NONBLOCKING_METHODS = { 'index_urls' }

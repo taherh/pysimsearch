@@ -34,17 +34,14 @@ from __future__ import(division, absolute_import, print_function,
                        unicode_literals)
 
 import codecs
+from concurrent import futures
 import io
 from itertools import chain
 import re
+import urllib
 
-from concurrent import futures
-import httplib2
 import lxml.html
 from lxml.html.clean import clean_html
-
-# get_text_file() needs an http object
-_HTTP = httplib2.Http(timeout=30)
 
 def get_text_file(filename):
     '''Returns file for filename
@@ -56,7 +53,8 @@ def get_text_file(filename):
 def get_url(url):
     http_pattern = '^http://'
     if re.search(http_pattern, url):
-        (response, content) = _HTTP.request(url)
+        urlfh = urllib.urlopen(url)
+        content = urlfh.read()
         html_tree = lxml.html.fromstring(content)
         clean_html(html_tree)  # removes crud from html
         clean_html_string = lxml.html.tostring(html_tree, 

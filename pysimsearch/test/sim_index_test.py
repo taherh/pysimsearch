@@ -200,7 +200,34 @@ class SimIndexTest(object):
                 self.assertAlmostEqual(score,
                                        golden_doc_hits_cos[docname],
                                        msg="results={}".format(str(results)))
-                
+    
+    def test_del_docids(self):
+        '''Test del_docids()'''
+        retest_list = (self.test_docnames_with_terms,
+                       self.test_query_simple_scorer,
+                       self.test_query_tfidf_scorer,)
+        
+        # Make sure that the selected tests already pass (just for clarity)
+        for test in retest_list:
+            test()
+
+        # Add an extra doc to the index
+        self.sim_index.index_string_buffers( (('extra_doc', "hello world"),) )
+
+        # Make sure that selected tests fail when we add an extra 'unexpected'
+        # doc to the index
+        for test in retest_list:
+            self.assertRaises(AssertionError, test)
+        
+        # Delete the extra doc
+        docid = self.sim_index.name_to_docid('extra_doc')
+        print('extra docid={}'.format(docid))
+        self.sim_index.del_docids(docid)
+
+        # Now make sure that the selected tests pass again
+        for test in retest_list:
+            test()
+    
     def test_config(self):
         '''Ensure that various config params are properly handled'''
 
@@ -311,7 +338,7 @@ class SimIndexCollectionTest(SimIndexTest, unittest.TestCase):
     
     def tearDown(self):
         pass
-
+    
 
 class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
     '''

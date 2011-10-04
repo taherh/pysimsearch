@@ -76,6 +76,9 @@ class MemorySimIndex(MapSimIndex):
         # term index
         term_index = dict()
         
+        # document vectors
+        doc_vectors = dict()
+        
         # additional stats used for scoring
         df_map = dict()
         doc_len_map = dict()
@@ -84,6 +87,7 @@ class MemorySimIndex(MapSimIndex):
                           docid_to_name_map=docid_to_name_map,
                           docid_to_feature_map=docid_to_feature_map,
                           term_index=term_index,
+                          doc_vectors=doc_vectors,
                           df_map=df_map,
                           doc_len_map=doc_len_map)
         

@@ -68,6 +68,7 @@ class SimIndex(object):
         self.query_scorer = None
         self._N = 0
         self._global_N = None
+        self._next_docid = 0
 
     def config(self, key):
         return self._config[key]
@@ -165,6 +166,11 @@ class SimIndex(object):
             named_files.append((name, io.StringIO(string_buffer)))
         self.index_files(named_files)
         
+    @abc.abstractmethod
+    def del_docids(self, *docids):
+        '''Deletes documents corresponding to docids from the index'''
+        return
+    
     @abc.abstractmethod
     def docid_to_name(self, docid):
         '''Returns document name for a given docid'''

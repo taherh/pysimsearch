@@ -73,7 +73,9 @@ def get_text_files(filenames=None):
     '''
     if filenames is not None:
         return ((name, get_text_file(name)) for name in filenames)
-    
+
+_executor = None
+
 def get_urls(urls=None):
     '''
     Returns an iterator of (name, file) tuples for urls
@@ -86,13 +88,18 @@ def get_urls(urls=None):
     #    return ((url, get_url(url)) for url in urls)
     #
     # but uses futures to allow parallel fetching/processing of urls
+    
+    # Initialize the executor if necessary
+    global _executor
+    if _executor is None:
+        _executor = futures.ThreadPoolExecutor(max_workers=10)
+
     if urls is not None:
         # submit the get_url() requests
-        with futures.ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_url = {
-                executor.submit(get_url, url): url
-                for url in urls
-            }
+        future_to_url = {
+            _executor.submit(get_url, url): url
+            for url in urls
+        }
         
         # generator that lazily iterates over futures and yields
         # (url, file) tuples

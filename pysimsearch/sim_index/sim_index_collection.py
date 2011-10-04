@@ -207,6 +207,26 @@ class SimIndexCollection(SimIndex):
                 *sharded_input_map[shard_id]
             )
 
+    @update_trigger
+    def del_docids(self, *docids):
+        '''Delete docid from index collection'''
+
+        sharded_del_map = defaultdict(list)
+        for docid in docids:
+            # make sure we have a compound docid
+            assert '-' in docid
+            (shard_id, sep, remote_docid) = docid.partition('-')
+            shard_id = int(shard_id)
+            # if the remote shard is expected to be a leaf, then cast
+            # remote docid to int
+            if '-' not in remote_docid:
+                remote_docid = int(remote_docid)
+            sharded_del_map[shard_id].append(remote_docid)
+        
+        # propagate the requests the appropriate shard
+        for (shard_id, remote_docids) in sharded_del_map.items():
+            self._shards[shard_id].del_docids(*remote_docids)
+    
     @staticmethod
     def make_node_docid(shard_id, docid):
         return "{}-{}".format(shard_id, docid)

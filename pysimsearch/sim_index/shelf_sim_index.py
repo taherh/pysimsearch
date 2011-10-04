@@ -73,7 +73,10 @@ class ShelfSimIndex(MapSimIndex):
         docid_to_feature_map = StrKeyMap(DBShelf(filename + '_feat', flag))
 
         # term index
-        term_index = StrKeyMap(DBShelf(filename +'_term', flag))
+        term_index = StrKeyMap(DBShelf(filename + '_term', flag))
+
+        # document vectors
+        doc_vectors = StrKeyMap(DBShelf(filename + '_doc_vec', flag))
 
         # additional stats used for scoring
         df_map = StrKeyMap(DBShelf(filename + '_df', flag))
@@ -83,6 +86,7 @@ class ShelfSimIndex(MapSimIndex):
                           docid_to_name_map=docid_to_name_map,
                           docid_to_feature_map=docid_to_feature_map,
                           term_index=term_index,
+                          doc_vectors=doc_vectors,
                           df_map=df_map,
                           doc_len_map=doc_len_map)
         
@@ -96,7 +100,7 @@ class ShelfSimIndex(MapSimIndex):
 
 class StrKeyMap(MutableMapping):
     '''
-    Ensure that key is converted to str type, compatible with supported keys
+    Ensure that key is converted to str type that is compatible with keys
     for underlying map.
     '''
     def __init__(self, map):

@@ -78,7 +78,8 @@ class ConcurrentSimIndex(object):
                      'set_config',
                      'update_config',
                      'index_string_buffers',
-                     'index_files'
+                     'index_files',
+                     'del_docids',
                      }
     
     # Note:  assume that index_urls() is implemented by calling index_files()

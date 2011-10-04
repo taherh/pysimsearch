@@ -38,6 +38,7 @@ from __future__ import (division, absolute_import, print_function,
                         unicode_literals)
 
 from collections import defaultdict
+import sys
 
 from . import SimIndex
 from .. import term_vec
@@ -68,6 +69,7 @@ class MapSimIndex(SimIndex):
                  docid_to_name_map=None,
                  docid_to_feature_map=None,
                  term_index=None,
+                 doc_vectors=None,
                  df_map=None,
                  doc_len_map=None):
 
@@ -80,6 +82,9 @@ class MapSimIndex(SimIndex):
 
         # term index
         self._term_index = term_index
+        
+        # document vectors (useful for deletions and certain scoring algorithms)
+        self._doc_vectors = doc_vectors
         
         # additional stats used for scoring
         self._df_map = df_map
@@ -116,7 +121,7 @@ class MapSimIndex(SimIndex):
         for (name, file) in named_files:
             with file:
                 t_vec = term_vec.term_vec(file, self.config('stoplist'))
-            docid = self._N
+            docid = self._next_docid
             self._name_to_docid_map[name] = docid
             self._docid_to_name_map[docid] = name
             for term in t_vec:
@@ -126,7 +131,9 @@ class MapSimIndex(SimIndex):
                 self._df_map[term] += 1
             self._add_vec(docid, t_vec)
             self._doc_len_map[docid] = term_vec.l2_norm(t_vec)
+            self._doc_vectors[docid] = t_vec
             self._N += 1
+            self._next_docid += 1
 
     def _add_vec(self, docid, term_vec):
         '''Add term_vec to the index'''
@@ -141,6 +148,39 @@ class MapSimIndex(SimIndex):
         for (term, new_postings) in term_index.items():
             self._term_index[term] = self.postings_list(term) + new_postings
 
+    def del_docids(self, *docids):
+        '''Delete docids from index'''
+
+        def _del_helper(map, key):
+            try:
+                del map[key]
+            except KeyError:
+#                sys.stderr.write("Unkown docid: {}\n".format(docid))
+                pass
+                
+        # TODO: optimize for batch deletion
+        for docid in docids:
+            for (term, freq) in self._doc_vectors[docid].iteritems():
+                # decr df count
+                self._df_map[term] -= 1
+                # filter out docid from term index
+                self._term_index[term] = [
+                    (_docid, freq)
+                    for (_docid, freq) in self._term_index.get(term, [])
+                    if _docid != docid
+                ]
+                if len(self._term_index[term]) == 0:
+                    del self._term_index[term]
+            
+            name = self.docid_to_name(docid)
+            _del_helper(self._docid_to_name_map, docid)
+            _del_helper(self._docid_to_feature_map, docid)
+            _del_helper(self._name_to_docid_map, name)
+            _del_helper(self._doc_len_map, docid)
+            _del_helper(self._doc_vectors, docid)
+            
+            self._N -= 1
+        
     def docid_to_name(self, docid):
         return self._docid_to_name_map[docid]
         
@@ -165,7 +205,6 @@ class MapSimIndex(SimIndex):
         Returns:
             A iterable of (docname, score) tuples sorted by score
         '''
-        
         postings_lists = []
         for term in query_vec:
             if self.config('lowercase'): term = term.lower()

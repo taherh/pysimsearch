@@ -96,6 +96,7 @@ class SimIndexService(object):
     PREFIX = 'sim_index'
     EXPORTED_METHODS = {'index_urls',
                         'index_string_buffers',
+                        'del_docids',
                         'docid_to_name',
                         'name_to_docid',
                         'docid_to_name',

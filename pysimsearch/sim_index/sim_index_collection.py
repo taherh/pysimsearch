@@ -82,7 +82,7 @@ class SimIndexCollection(SimIndex):
     have a read-only collection, you don't need a sharding function.
     '''
     
-    def __init__(self, root=True):
+    def __init__(self, shards=(), root=True):
         super(SimIndexCollection, self).__init__()
 
         self._shards = []
@@ -94,6 +94,9 @@ class SimIndexCollection(SimIndex):
         self._dirty = False
         
         self.set_config('root', root, passthrough=False)
+        
+        if shards:
+            self.add_shards(*shards)
 
     def set_config(self, key, value, passthrough=True):
         '''Update config var for shards'''

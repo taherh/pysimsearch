@@ -53,13 +53,12 @@ to sim_index.
  [u'http://www.berkeley.edu', 0.020464326883958977]]
 
 ** pysimsearch Client **
+>>> from pprint import pprint
 >>> from pysimsearch import sim_index
 >>> index = sim_index.RemoteSimIndex('http://localhost:9001/RPC2')
 >>> index.index_urls('http://www.stanford.edu/', 'http://www.berkeley.edu', 'http://www.ucla.edu')
->>> pprint(index.query('university'))
-[[u'http://www.stanford.edu/', 0.10469570845856098],
- [u'http://www.ucla.edu', 0.04485065887313478],
- [u'http://www.berkeley.edu', 0.020464326883958977]]
+>>> pprint(index.query('stanford'))
+[[u'http://www.stanford.edu/', 0.3612214953965162]]
 
 '''
 
@@ -81,6 +80,7 @@ import logging
 import traceback
 import types
 
+from pprint import pprint
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCServer as SimpleRPCServer
 from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler as SimpleRPCRequestHandler
 
@@ -88,7 +88,8 @@ from jsonrpclib.SimpleJSONRPCServer import SimpleJSONRPCRequestHandler as Simple
 #from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler as SimpleRPCRequestHandler
 
 # our modules
-from . import sim_index, query_scorer
+from .sim_index import *
+from . import query_scorer
 
 class SimIndexService(object):
     '''Provide access to sim_index as an RPC service'''
@@ -114,9 +115,8 @@ class SimIndexService(object):
                         'set_config',
                         'update_config'}
     
-    def __init__(self):
-        self._sim_index = sim_index.ConcurrentSimIndex(sim_index.MemorySimIndex())
-        self._sim_index.set_query_scorer('tfidf')
+    def __init__(self, index):
+        self._sim_index = index
     
     def _dispatch(self, method, params):
         if not method.startswith(self.PREFIX + '.'):
@@ -148,12 +148,33 @@ class SimIndexService(object):
 class RequestHandler(SimpleRPCRequestHandler):
     rpc_paths = ('/RPC2',)
 
-def start_sim_index_server(port, logRequests = True):
+def start_sim_index_server(port,
+                           backends=(),
+                           remote_urls=(),
+                           root=True,
+                           logRequests=True):
+
     server = SimpleRPCServer(('localhost', port),
-                             logRequests = logRequests,
-                             requestHandler = RequestHandler)
+                             logRequests=logRequests,
+                             requestHandler=RequestHandler)
     
-    server.register_instance(SimIndexService())
+    backend_list = list(backends)
+    if remote_urls:
+        backend_list.extend(
+            [RemoteSimIndex(url) for url in remote_urls])
+
+    if backend_list:
+        if len(backend_list) == 1:
+            index = ConcurrentSimIndex(backend_list[0])
+        else:
+            index = ConcurrentSimIndex(
+                        SimIndexCollection(
+                            shards=backend_list, root=root))
+    else:
+        index = ConcurrentSimIndex(MemorySimIndex())
+        index.set_query_scorer('tfidf')
+
+    server.register_instance(SimIndexService(index))
 
     try:
         print('Use Control-C to exit')
@@ -167,16 +188,35 @@ def start_sim_index_server(port, logRequests = True):
 def main():
     parser = argparse.ArgumentParser(
         description='Start a pysimsearch server')
-    parser.add_argument('command',
-                        choices=['sim_index'],
-                        help='Specify the pysimsearch service to start')
-    parser.add_argument('-p', '--port', nargs='?', default=9001, type=int,
-                        help='Specify server port')
+    subparsers = parser.add_subparsers(title='services',
+                                       description='valid services',
+                                       dest='command',
+                                       help='services help',)
+    
+    parser_sim_index = subparsers.add_parser('sim_index',
+                                             help='Start a SimIndex')
+    parser_sim_index.add_argument(
+            '-p', '--port', nargs='?',
+            default=9001, type=int,
+            help='Specify server port'
+        )
+
+    parser_sim_index.add_argument(
+            '-r', '--remote_shards', nargs='*',
+            help='Specify remote backends to use, instead of local index'
+        )
+    
+    parser_sim_index.add_argument(
+            '--noroot', action='store_false',
+            dest='root', default=True,
+            help='True if this is the root index node'
+    )
 
     args = parser.parse_args()
-
     if args.command == 'sim_index':
-        start_sim_index_server(args.port)
+        start_sim_index_server(port=args.port,
+                               remote_urls=args.remote_shards,
+                               root=args.root)
     else:
         raise Exception('Unknown command: {}'.format(args.command))
         

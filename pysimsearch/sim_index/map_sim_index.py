@@ -120,13 +120,15 @@ class MapSimIndex(SimIndex):
         '''
         for (name, file) in named_files:
             with file:
-                t_vec = term_vec.term_vec(file, self.config('stoplist'))
+                t_vec = term_vec.term_vec(
+                    file,
+                    stoplist=self.config('stoplist'),
+                    lowercase=self.config('lowercase'),
+                )
             docid = self._next_docid
             self._name_to_docid_map[name] = docid
             self._docid_to_name_map[docid] = name
             for term in t_vec:
-                if self.config('lowercase'):
-                    term = term.lower()
                 if term not in self._df_map: self._df_map[term] = 0
                 self._df_map[term] += 1
             self._add_vec(docid, t_vec)
@@ -140,8 +142,6 @@ class MapSimIndex(SimIndex):
         # build up a dictionary of batched updates for the index
         term_index = defaultdict(list)
         for (term, freq) in term_vec.iteritems():
-            if self.config('lowercase'):
-                term = term.lower()
             term_index[term].append((docid, freq))
 
         # apply the updates to the term index
@@ -207,7 +207,6 @@ class MapSimIndex(SimIndex):
         '''
         postings_lists = []
         for term in query_vec:
-            if self.config('lowercase'): term = term.lower()
             postings_lists.append((term, self.postings_list(term)))
 
         

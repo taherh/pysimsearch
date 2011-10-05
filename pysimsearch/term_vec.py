@@ -70,7 +70,7 @@ def magnitude(v):
     '''Returns L2 norm of term vector v (identical to l2_norm())'''
     return l2_norm(v)
 
-def term_vec(input, stoplist = None):
+def term_vec(input, stoplist=None, lowercase=False):
     '''
     Returns a term vector for ``input``, represented as a dictionary
     of the form {term: frequency}
@@ -89,6 +89,7 @@ def term_vec(input, stoplist = None):
         for line in input:
             for term in line.split():
                 if term not in stoplist:
+                    if lowercase: term = term.lower()
                     if term not in tf_dict: tf_dict[term] = 0
                     tf_dict[term] += 1
         return tf_dict

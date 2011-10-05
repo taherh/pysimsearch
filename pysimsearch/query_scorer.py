@@ -158,7 +158,6 @@ class TFIDFQueryScorer(QueryScorer):
             query_term_wt = self.tf_weight(query_vec[term]) * idf
             for (docid, freq) in postings_list:
                 doc_hit_map[docid] += self.tf_weight(freq) * query_term_wt
-        
         for (docid, weight) in doc_hit_map.iteritems():
             doc_len = get_doc_len(docid)
             doc_hit_map[docid] = weight / doc_len

@@ -357,8 +357,6 @@ class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
 
         print("SimIndexRemoteCollectionTest")
         
-        self.sim_index = SimIndexCollection()
-        
         # We will create a collection tree of the form:
         #
         #      Root
@@ -367,26 +365,53 @@ class SimIndexRemoteCollectionTest(SimIndexTest, unittest.TestCase):
         #   /\     /\
         #  1  2   3  4
         self.processes = []
+
+        # start leaves
         for i in range(4):
             port = 9100 + i
             process = Process(target=sim_server.start_sim_index_server,
                               kwargs={'port': port, 'logRequests': False})
             process.daemon = True
+            process.start()
             self.processes.append(process)
             
-        for process in self.processes:
-            process.start()
-            
-        print("Waiting for servers to start")
+        print("Waiting for leaf servers to start")
         time.sleep(0.1)
-
-        sim_index_nodes = (SimIndexCollection(), SimIndexCollection())  # (A, B)
+        
+        leaf_nodes = [[],[]]
         for i in range(4):
             port = 9100 + i
-            sim_index_nodes[i//2].add_shards(
+            leaf_nodes[i//2].append(RemoteSimIndex(
+                "http://localhost:{}/RPC2".format(port)))
+
+        # start interior nodes (A, B)
+        for i in range(2):
+            port = 9200 + i
+            process = Process(
+                target=sim_server.start_sim_index_server,
+                kwargs={ 'port': port,
+                         'backends': leaf_nodes[i],
+                         'root': False,
+                         'logRequests': False
+                        }
+            )
+            process.daemon = True
+            process.start()
+            self.processes.append(process)
+
+        print("Waiting for intermediate servers to start")
+        time.sleep(0.1)        
+
+        interior_nodes = []
+        for i in range(2):
+            port = 9200 + i
+            interior_nodes.append(
                 RemoteSimIndex("http://localhost:{}/RPC2".format(port)))
 
-        self.sim_index.add_shards(*sim_index_nodes)
+        # root node
+        self.sim_index = SimIndexCollection(root=True)
+        self.sim_index.add_shards(*interior_nodes)
+        
         super(SimIndexRemoteCollectionTest, self).setUp()
     
     def tearDown(self):

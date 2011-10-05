@@ -218,14 +218,13 @@ class SimIndex(object):
             A iterable of (docname, score) tuples sorted by score
         '''
         if isinstance(q, basestring):
-            if self.config('lowercase'):
-                q = q.lower()
             if isinstance(q, str):
                 q = unicode(q)
-            return self._query(term_vec.term_vec(q))
+            return self._query(
+                term_vec.term_vec(q,
+                                  stoplist=self.config('stoplist'),
+                                  lowercase=self.config('lowercase')))
         else:
-            if self.config('lowercase'):
-                q = {term.lower(): freq for (term, freq) in q.items()}
             return self._query(q)
         
     @abc.abstractmethod

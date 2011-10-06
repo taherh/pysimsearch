@@ -73,14 +73,12 @@ Use Control-C to exit</pre>
 </pre></div>
 </div>
 <p>** pysimsearch Client **
+&gt;&gt;&gt; from pprint import pprint
 &gt;&gt;&gt; from pysimsearch import sim_index
 &gt;&gt;&gt; index = sim_index.RemoteSimIndex(&#8216;<a class="reference external" href="http://localhost:9001/RPC2">http://localhost:9001/RPC2</a>&#8216;)
 &gt;&gt;&gt; index.index_urls(&#8216;<a class="reference external" href="http://www.stanford.edu/">http://www.stanford.edu/</a>&#8216;, &#8216;<a class="reference external" href="http://www.berkeley.edu">http://www.berkeley.edu</a>&#8216;, &#8216;<a class="reference external" href="http://www.ucla.edu">http://www.ucla.edu</a>&#8216;)
-&gt;&gt;&gt; pprint(index.query(&#8216;university&#8217;))
-[[u&#8217;<a class="reference external" href="http://www.stanford.edu/">http://www.stanford.edu/</a>&#8216;, 0.10469570845856098],</p>
-<blockquote>
-[u&#8217;<a class="reference external" href="http://www.ucla.edu">http://www.ucla.edu</a>&#8216;, 0.04485065887313478],
-[u&#8217;<a class="reference external" href="http://www.berkeley.edu">http://www.berkeley.edu</a>&#8216;, 0.020464326883958977]]</blockquote>
+&gt;&gt;&gt; pprint(index.query(&#8216;stanford&#8217;))
+[[u&#8217;<a class="reference external" href="http://www.stanford.edu/">http://www.stanford.edu/</a>&#8216;, 0.3612214953965162]]</p>
 <dl class="class">
 <dt id="pysimsearch.sim_server.RequestHandler">
 <em class="property">class </em><tt class="descclassname">pysimsearch.sim_server.</tt><tt class="descname">RequestHandler</tt><big>(</big><em>request</em>, <em>client_address</em>, <em>server</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_server.RequestHandler" title="Permalink to this definition">¶</a></dt>
@@ -88,7 +86,7 @@ Use Control-C to exit</pre>
 
 <dl class="class">
 <dt id="pysimsearch.sim_server.SimIndexService">
-<em class="property">class </em><tt class="descclassname">pysimsearch.sim_server.</tt><tt class="descname">SimIndexService</tt><a class="headerlink" href="#pysimsearch.sim_server.SimIndexService" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_server.</tt><tt class="descname">SimIndexService</tt><big>(</big><em>index</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_server.SimIndexService" title="Permalink to this definition">¶</a></dt>
 <dd><p>Provide access to sim_index as an RPC service</p>
 </dd></dl>
 
@@ -99,7 +97,7 @@ Use Control-C to exit</pre>
 
 <dl class="function">
 <dt id="pysimsearch.sim_server.start_sim_index_server">
-<tt class="descclassname">pysimsearch.sim_server.</tt><tt class="descname">start_sim_index_server</tt><big>(</big><em>port</em>, <em>logRequests=True</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_server.start_sim_index_server" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">pysimsearch.sim_server.</tt><tt class="descname">start_sim_index_server</tt><big>(</big><em>port</em>, <em>backends=()</em>, <em>remote_urls=()</em>, <em>root=True</em>, <em>logRequests=True</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_server.start_sim_index_server" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

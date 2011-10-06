@@ -72,24 +72,30 @@
 concurrent access.</p>
 <p><tt class="docutils literal"><span class="pre">ConcurrentSimIndex</span></tt> is compatible with the <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt> interface.
 We use <tt class="docutils literal"><span class="pre">concurrent.futures</span></tt> to allow some basic concurrency for indexing
-and querying.</p>
+and querying.  In particular, calls to <tt class="docutils literal"><span class="pre">index_urls()</span></tt> are executed in a
+nonblocking manner.</p>
 <dl class="method">
-<dt id="pysimsearch.sim_index.ConcurrentSimIndex.concurrency_decorator">
-<tt class="descname">concurrency_decorator</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.concurrency_decorator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrap func with non-blocking futures call.
-Return value of <tt class="docutils literal"><span class="pre">func</span></tt> is ignored.</p>
+<dt id="pysimsearch.sim_index.ConcurrentSimIndex.acquire_read_lock">
+<tt class="descname">acquire_read_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.acquire_read_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire read lock</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pysimsearch.sim_index.ConcurrentSimIndex.read_decorator">
-<tt class="descname">read_decorator</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.read_decorator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrap func with read_lock protection</p>
+<dt id="pysimsearch.sim_index.ConcurrentSimIndex.acquire_write_lock">
+<tt class="descname">acquire_write_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.acquire_write_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Acquire write lock</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="pysimsearch.sim_index.ConcurrentSimIndex.write_decorator">
-<tt class="descname">write_decorator</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.write_decorator" title="Permalink to this definition">¶</a></dt>
-<dd><p>Wrap func with write_lock protection</p>
+<dt id="pysimsearch.sim_index.ConcurrentSimIndex.release_read_lock">
+<tt class="descname">release_read_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.release_read_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release read lock</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pysimsearch.sim_index.ConcurrentSimIndex.release_write_lock">
+<tt class="descname">release_write_lock</tt><big>(</big><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.ConcurrentSimIndex.release_write_lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release write lock</p>
 </dd></dl>
 
 </dd></dl>

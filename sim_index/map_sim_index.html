@@ -59,7 +59,7 @@
 <p>See <tt class="xref py py-class docutils literal"><span class="pre">MemorySimIndex</span></tt> for sample usage</p>
 <dl class="class">
 <dt id="pysimsearch.sim_index.MapSimIndex">
-<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">MapSimIndex</tt><big>(</big><em>name_to_docid_map=None</em>, <em>docid_to_name_map=None</em>, <em>docid_to_feature_map=None</em>, <em>term_index=None</em>, <em>df_map=None</em>, <em>doc_len_map=None</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.MapSimIndex" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">pysimsearch.sim_index.</tt><tt class="descname">MapSimIndex</tt><big>(</big><em>name_to_docid_map=None</em>, <em>docid_to_name_map=None</em>, <em>docid_to_feature_map=None</em>, <em>term_index=None</em>, <em>doc_vectors=None</em>, <em>df_map=None</em>, <em>doc_len_map=None</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.MapSimIndex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Inherits from <a class="reference internal" href="sim_index.html#pysimsearch.sim_index.SimIndex" title="pysimsearch.sim_index.SimIndex"><tt class="xref py py-class docutils literal"><span class="pre">pysimsearch.sim_index.SimIndex</span></tt></a>.</p>
 <p>Simple implementation of the <tt class="xref py py-class docutils literal"><span class="pre">SimIndex</span></tt> interface backed with dict-like
 objects (MutableMapping).  By default, uses <cite>dict</cite>, in which case the
@@ -74,6 +74,12 @@ E.g., do not do:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="nb">map</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">+=</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">]</span>  <span class="c"># same as: map[key] = map[key].__iadd__([a,b])</span>
 </pre></div>
 </div>
+<dl class="method">
+<dt id="pysimsearch.sim_index.MapSimIndex.del_docids">
+<tt class="descname">del_docids</tt><big>(</big><em>*docids</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.MapSimIndex.del_docids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete docids from index</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="pysimsearch.sim_index.MapSimIndex.docids_with_terms">
 <tt class="descname">docids_with_terms</tt><big>(</big><em>terms</em><big>)</big><a class="headerlink" href="#pysimsearch.sim_index.MapSimIndex.docids_with_terms" title="Permalink to this definition">¶</a></dt>

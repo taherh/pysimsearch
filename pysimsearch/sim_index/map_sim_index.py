@@ -30,7 +30,7 @@
 '''
 MapSimIndex
 
-See :py:class:`MemorySimIndex` for sample usage
+See :mod:`pysimsearch.sim_index.memory_sim_index` for sample usage
 
 '''
 
